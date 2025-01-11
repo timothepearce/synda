@@ -1,7 +1,8 @@
-from typing import Literal
-
-from pydantic import BaseModel
+from nebula.config.step import Step
 
 
-class Generation(BaseModel):
-    type: Literal["generation"]
+class Generation(Step):
+    type: str = "generation"
+
+    def execute(self):
+        pass

@@ -1,3 +1,12 @@
-from nebula.config.step import Ablation, Generation, Split
+from abc import ABC, abstractmethod
 
-Step = Split | Generation | Ablation
+from pydantic import BaseModel
+
+
+class Step(BaseModel, ABC):
+    type: str
+
+    @abstractmethod
+    def execute(self) -> None:
+        pass
+

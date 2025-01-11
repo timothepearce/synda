@@ -1,7 +1,8 @@
-from typing import Literal
-
-from pydantic import BaseModel
+from nebula.config.step import Step
 
 
-class Ablation(BaseModel):
-    type: Literal["ablation"]
+class Ablation(Step):
+    type: str = "ablation"
+
+    def execute(self):
+        pass

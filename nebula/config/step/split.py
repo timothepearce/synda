@@ -1,7 +1,8 @@
-from typing import Literal
-
-from pydantic import BaseModel
+from nebula.config.step import Step
 
 
-class Split(BaseModel):
-    type: Literal["split"]
+class Split(Step):
+    type: str = "split"
+
+    def execute(self) -> None:
+        pass

@@ -3,13 +3,15 @@ import yaml
 
 from pydantic import BaseModel
 
-from nebula.config.step import Step
 from nebula.config.source import Source
+from nebula.config.step.ablation import Ablation
+from nebula.config.step.generation import Generation
+from nebula.config.step.split import Split
 
 
 class Config(BaseModel):
     source: Source
-    pipeline: list[Step]
+    pipeline: list[Split | Generation | Ablation]
 
 
 def load_config(config_path: str) -> Config:
