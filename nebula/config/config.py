@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from nebula.config.source import Source
+from nebula.config import Source
 
 
 class Config(BaseModel):

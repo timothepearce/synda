@@ -15,6 +15,9 @@ def load_config(config_path: str) -> Config:
     except FileNotFoundError:
         print(f"The file {config_path} doesn't exist")
         sys.exit(1)
+    except ValueError as e:
+        print(f"Configuration validation error: {e}")
+        sys.exit(1)
 
 
 def main():
