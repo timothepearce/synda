@@ -6,4 +6,5 @@ class Pipeline:
         self.config = config
 
     def execute(self):
-        print(self.config.source.properties)
+        print(f"Source: {self.config.source.properties.path}")
+        print(f"Pipeline: {self.config.pipeline}")

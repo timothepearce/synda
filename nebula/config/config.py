@@ -3,11 +3,13 @@ import yaml
 
 from pydantic import BaseModel
 
+from nebula.config.step import Step
 from nebula.config.source import Source
 
 
 class Config(BaseModel):
     source: Source
+    pipeline: list[Step]
 
 
 def load_config(config_path: str) -> Config:
