@@ -2,11 +2,13 @@ import argparse
 import sys
 import yaml
 
+from nebula import Config
 
-def load_config(config_path: str) -> dict[any, any]:
+
+def load_config(config_path: str) -> Config:
     try:
         with open(config_path, 'r', encoding='utf-8') as file:
-            return yaml.safe_load(file)
+            return Config.model_validate(yaml.safe_load(file))
     except yaml.YAMLError as e:
         print(f"Error in YAML file: {e}")
         sys.exit(1)

@@ -8,26 +8,26 @@ A simple synthetic data generator pipeline.
 source:
   type: csv
   properties:
-    path: "path/to/source.csv"
+    path: "./source.csv"
     target_column: "content"
 
-steps:
+pipeline:
   - type: split
     method: chunk
     parameters:
       size: 500
-      template: |
-        Here is some text:
-        content: {chunk}
-        
-        Instructions :
-        1. Ask a question regarding the content
-        2. Use english only
-  
+
   - type: generation
     parameters:
       provider: openai
       model: gpt-4o-mini
+      template: |
+        Here is some text:
+        content: {chunk}
+
+        Instructions :
+        1. Ask a question regarding the content
+        2. Use english only
 
   - type: ablation
     method: llm
