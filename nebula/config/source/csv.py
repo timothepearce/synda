@@ -11,6 +11,7 @@ class CSVSourceProperties(BaseModel):
     target_column: str
     separator: str = Field(default=";")
 
+    # @todo remove data loading but keep validation
     data: pd.DataFrame | None = Field(default=None)
 
     @model_validator(mode='after')

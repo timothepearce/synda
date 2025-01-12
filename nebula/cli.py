@@ -1,6 +1,6 @@
 import argparse
 
-from nebula.config import load_config
+from nebula.config import Config
 from nebula.pipeline import Pipeline
 
 
@@ -16,7 +16,7 @@ def main():
     )
 
     args = parser.parse_args()
-    config = load_config(args.input)
+    config = Config.load_config(args.input)
     pipeline = Pipeline(config)
 
     pipeline.execute()
