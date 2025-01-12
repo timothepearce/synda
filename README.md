@@ -8,8 +8,9 @@ A simple synthetic data generator pipeline.
 source:
   type: csv
   properties:
-    path: "./source.csv"
-    target_column: "content"
+    path: tests/stubs/simple_pipeline/source.csv
+    target_column: content
+    separator: "\t"
 
 pipeline:
   - type: split
@@ -18,22 +19,27 @@ pipeline:
       size: 500
 
   - type: generation
+    method: llm
     parameters:
       provider: openai
       model: gpt-4o-mini
       template: |
-        Here is some text:
+        Ask a question regarding the content.
         content: {chunk}
 
         Instructions :
-        1. Ask a question regarding the content
-        2. Use english only
+        1. Use english only
+        2. Keep it short
+        
+        question: 
 
   - type: ablation
     method: llm
     parameters:
+      provider: openai
       model: gpt-4o-mini
-      instructions:
-        - "Checks text for consistency"
-        - "Check that the text is only in English"
+      consensus: all # any, majority
+      criteria:
+        - Is the text consistent?
+        - Is the text only in english?
 ```
