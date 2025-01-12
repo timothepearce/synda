@@ -168,6 +168,3 @@ cython_debug/
 
 # Macos
 .DS_Store
-
-# Stubs
-stubs/
