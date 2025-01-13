@@ -7,9 +7,5 @@ class Step(BaseModel, ABC):
     type: str
 
     @abstractmethod
-    def validate_config(self) -> bool:
-        pass
-
-    @abstractmethod
     def get_executor(self):
         pass

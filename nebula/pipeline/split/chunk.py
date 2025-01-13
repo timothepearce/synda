@@ -11,7 +11,7 @@ class Chunk(Executor):
         input_data = pipeline_context.current_data
         chunks: list[str] = []
 
-        size = self.config.parameters.get("size", 500)
+        size = self.config.parameters.size
         text = input_data
 
         while text:

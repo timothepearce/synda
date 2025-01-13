@@ -1,14 +1,24 @@
+from typing import Literal
+
+from pydantic import BaseModel, Field
+
 from nebula.config.parser import Step
 from nebula.pipeline.executor import Executor
 
 
+class SplitParameters(BaseModel):
+    size: int = Field(
+        default=500,
+        gt=0,
+        lt=10000,
+        description="Size of each chunk in characters"
+    )
+
+
 class Split(Step):
     type: str = "split"
-    method: str
-    parameters: dict
-
-    def validate_config(self) -> bool:
-        return True
+    method: Literal["chunk"]
+    parameters: SplitParameters
 
     def get_executor(self) -> Executor:
         if self.method == "chunk":
