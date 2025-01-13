@@ -1,5 +1,6 @@
-from nebula.config.step import Step
+from nebula.config.parser import Step
 from nebula.pipeline.pipeline_context import PipelineContext
+from nebula.pipeline.split import Chunk
 
 
 class Split(Step):
@@ -7,7 +8,14 @@ class Split(Step):
     method: str
     parameters: dict
 
-    def execute(self, pipeline_data: PipelineContext) -> PipelineContext:
+    def validate_config(self) -> bool:
+        return True
+
+    def get_executor(self):
+        if self.method == "chunk":
+            return Chunk()
+
+    def _move_to_executor(self, pipeline_data: PipelineContext):
         input_data = pipeline_data.current_data
         chunks: list[str] = []
 

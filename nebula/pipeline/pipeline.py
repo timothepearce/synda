@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 class Pipeline:
     def __init__(self, config: "Config"):
         self.config = config
-        self.steps = config.pipeline
+        self.pipeline = config.pipeline
         self.data: PipelineContext = None
 
     def execute(self):
@@ -19,8 +19,9 @@ class Pipeline:
             history=[]
         )
 
-        for step in self.steps:
-            self.data = step.execute(self.data)
+        for parser in self.pipeline:
+            executor = parser.get_executor()
+            self.data = executor(self.data)
 
     def _load_source_data(self) -> str:
         source = self.config.source

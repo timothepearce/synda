@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from nebula.config.source.csv import CSVSourceProperties
+from nebula.config.parser.source.csv import CSVSourceProperties
 
 
 class DatabaseSourceProperties(BaseModel):

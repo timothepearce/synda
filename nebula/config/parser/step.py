@@ -2,12 +2,14 @@ from abc import ABC, abstractmethod
 
 from pydantic import BaseModel
 
-from nebula.pipeline.pipeline_context import PipelineContext
-
 
 class Step(BaseModel, ABC):
     type: str
 
     @abstractmethod
-    def execute(self, pipeline_data: PipelineContext) -> PipelineContext:
+    def validate_config(self) -> bool:
+        pass
+
+    @abstractmethod
+    def get_executor(self):
         pass
