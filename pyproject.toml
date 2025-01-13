@@ -12,6 +12,7 @@ pyyaml = "^6.0.2"
 pydantic = "^2.10.5"
 pandas = "^2.2.3"
 python-dotenv = "^1.0.1"
+litellm = "^1.58.0"
 
 [build-system]
 requires = ["poetry-core"]

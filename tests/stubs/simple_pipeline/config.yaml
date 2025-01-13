@@ -10,21 +10,21 @@ pipeline:
     method: chunk
     parameters:
       size: 500
-#
-#  - type: generation
-#    method: llm
-#    parameters:
-#      provider: openai
-#      model: gpt-4o-mini
-#      template: |
-#        Ask a question regarding the content.
-#        content: {chunk}
-#
-#        Instructions :
-#        1. Use english only
-#        2. Keep it short
-#
-#        question:
+
+  - type: generation
+    method: llm
+    parameters:
+      provider: openai
+      model: gpt-4o-mini
+      template: |
+        Ask a question regarding the content.
+        content: {chunk}
+
+        Instructions :
+        1. Use english only
+        2. Keep it short
+
+        question:
 #
 #  - type: ablation
 #    method: llm

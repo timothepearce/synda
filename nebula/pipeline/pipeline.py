@@ -20,6 +20,7 @@ class Pipeline:
         )
 
         for parser in self.pipeline:
+            print(parser)
             executor = parser.get_executor()
             self.data = executor.execute(self.data)
 
