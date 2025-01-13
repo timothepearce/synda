@@ -21,7 +21,7 @@ class Pipeline:
 
         for parser in self.pipeline:
             executor = parser.get_executor()
-            self.data = executor(self.data)
+            self.data = executor.execute(self.data)
 
     def _load_source_data(self) -> str:
         source = self.config.source
