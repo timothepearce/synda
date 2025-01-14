@@ -30,4 +30,6 @@ class PipelineContext:
         self.current_data = output_data
 
         if is_debug_enabled():
-            pprint(f"Step result from {step_type}: {step_result}")
+            print(f"{step_type} result:")
+            pprint(step_result)
+            print("\n")
