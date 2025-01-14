@@ -25,13 +25,13 @@ pipeline:
         2. Keep it short
 
         question:
-#
-#  - type: ablation
-#    method: llm
-#    parameters:
-#      provider: openai
-#      model: gpt-4o-mini
-#      consensus: all # any, majority
-#      criteria:
-#        - Is the text consistent?
-#        - Is the text only in english?
+
+  - type: ablation
+    method: llm-judge-binary
+    parameters:
+      provider: openai
+      model: gpt-4o-mini
+      consensus: all # any, majority
+      criteria:
+        - Is the text written in english?
+        # - Is the text consistent?
