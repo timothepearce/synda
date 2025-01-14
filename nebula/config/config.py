@@ -3,7 +3,7 @@ import yaml
 
 from pydantic import BaseModel
 
-from nebula.config.source import Source
+from nebula.config.input import Input
 
 from nebula.config.ablation import Ablation
 from nebula.config.generation import Generation
@@ -11,7 +11,7 @@ from nebula.config.split import Split
 
 
 class Config(BaseModel):
-    source: Source
+    input: Input
     pipeline: list[Split | Generation | Ablation]
 
     @staticmethod

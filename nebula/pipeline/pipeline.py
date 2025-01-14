@@ -29,13 +29,13 @@ class Pipeline:
 
     # @todo move into a source class loader
     def _load_source_data(self) -> str:
-        source = self.config.source
-        if source.type == "csv":
+        input = self.config.input
+        if input.type == "csv":
             import pandas as pd
             df = pd.read_csv(
-                source.properties.path,
-                sep=source.properties.separator
+                input.properties.path,
+                sep=input.properties.separator
             )
-            return df[source.properties.target_column].values[0]
+            return df[input.properties.target_column].values[0]
 
-        raise ValueError(f"Source type '{source.type}' not supported")
+        raise ValueError(f"Source type '{input.type}' not supported")

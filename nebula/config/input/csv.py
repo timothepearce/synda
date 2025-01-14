@@ -3,16 +3,16 @@ import os
 import pandas as pd
 from pydantic import Field, model_validator
 
-from nebula.config.source.source_properties import SourceProperties
+from nebula.config.input.input_properties import InputProperties
 
 
-class CSVSourceProperties(SourceProperties):
+class CSVInputProperties(InputProperties):
     path: str
     target_column: str
     separator: str = Field(default=";")
 
     @model_validator(mode='after')
-    def validate_properties(self) -> 'CSVSourceProperties':
+    def validate_properties(self) -> 'CSVInputProperties':
         self._validate_path()
         self._validate_file()
         return self

@@ -1,14 +1,8 @@
-source:
+input:
   type: csv
   properties:
     path: tests/stubs/simple_pipeline/source.csv
     target_column: content
-    separator: "\t"
-
-output:
-  type: csv
-  properties:
-    path: tests/stubs/simple_pipeline/output.csv
     separator: "\t"
 
 pipeline:
@@ -41,3 +35,9 @@ pipeline:
       criteria:
         - Is the text written in english?
         # - Is the text consistent?
+
+output:
+  type: csv
+  properties:
+    path: tests/stubs/simple_pipeline/output.csv
+    separator: "\t"
