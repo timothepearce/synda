@@ -1,6 +1,6 @@
 import os
 
-# from litellm import completion
+from litellm import completion
 
 from nebula.config.parser.generation import Generation
 from nebula.pipeline.executor import Executor
