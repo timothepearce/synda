@@ -1,6 +1,8 @@
+import os
 from typing import TYPE_CHECKING
 
 from nebula.pipeline.pipeline_context import PipelineContext
+from nebula.utils import is_debug_enabled
 
 if TYPE_CHECKING:
     from nebula.config import Config
@@ -20,7 +22,8 @@ class Pipeline:
         )
 
         for parser in self.pipeline:
-            print(parser)
+            if is_debug_enabled():
+                print(parser)
             executor = parser.get_executor()
             self.data = executor.execute(self.data)
 

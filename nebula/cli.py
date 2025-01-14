@@ -1,7 +1,12 @@
 import argparse
 
+from dotenv import load_dotenv
+
 from nebula.config import Config
 from nebula.pipeline import Pipeline
+
+
+load_dotenv()
 
 
 def main():

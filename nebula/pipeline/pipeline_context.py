@@ -1,6 +1,9 @@
+import os
 from pprint import pprint
 
 from dataclasses import dataclass
+
+from nebula.utils import is_debug_enabled
 
 
 @dataclass
@@ -26,4 +29,5 @@ class PipelineContext:
         self.history.append(step_result)
         self.current_data = output_data
 
-        pprint(f"Step result from {step_type}: {step_result}")
+        if is_debug_enabled():
+            pprint(f"Step result from {step_type}: {step_result}")
