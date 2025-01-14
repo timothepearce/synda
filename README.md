@@ -5,7 +5,7 @@ A simple synthetic data generator pipeline.
 ## Pipeline file
 
 ```yaml
-source:
+input:
   type: csv
   properties:
     path: tests/stubs/simple_pipeline/source.csv
@@ -30,16 +30,22 @@ pipeline:
         Instructions :
         1. Use english only
         2. Keep it short
-        
-        question: 
+
+        question:
 
   - type: ablation
-    method: llm
+    method: llm-judge-binary
     parameters:
       provider: openai
       model: gpt-4o-mini
       consensus: all # any, majority
       criteria:
+        - Is the text written in english?
         - Is the text consistent?
-        - Is the text only in english?
+
+output:
+  type: csv
+  properties:
+    path: tests/stubs/simple_pipeline/output.csv
+    separator: "\t"
 ```
