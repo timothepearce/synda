@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from nebula.config.parser import Step
+from nebula.config.step import Step
 from nebula.pipeline.pipeline_context import PipelineContext
 
 

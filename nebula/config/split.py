@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from nebula.config.parser import Step
+from nebula.config.step import Step
 from nebula.pipeline.executor import Executor
 
 

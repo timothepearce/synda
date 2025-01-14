@@ -5,6 +5,12 @@ source:
     target_column: content
     separator: "\t"
 
+output:
+  type: csv
+  properties:
+    path: tests/stubs/simple_pipeline/output.csv
+    separator: "\t"
+
 pipeline:
   - type: split
     method: chunk

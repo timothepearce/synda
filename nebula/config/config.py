@@ -3,11 +3,11 @@ import yaml
 
 from pydantic import BaseModel
 
-from nebula.config.parser.source import Source
+from nebula.config.source import Source
 
-from nebula.config.parser.ablation import Ablation
-from nebula.config.parser.generation import Generation
-from nebula.config.parser.split import Split
+from nebula.config.ablation import Ablation
+from nebula.config.generation import Generation
+from nebula.config.split import Split
 
 
 class Config(BaseModel):

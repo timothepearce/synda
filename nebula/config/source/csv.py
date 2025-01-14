@@ -3,7 +3,7 @@ import os
 import pandas as pd
 from pydantic import Field, model_validator
 
-from nebula.config.parser.source.source_properties import SourceProperties
+from nebula.config.source.source_properties import SourceProperties
 
 
 class CSVSourceProperties(SourceProperties):

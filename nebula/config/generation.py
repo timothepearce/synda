@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from nebula.config.parser import Step
+from nebula.config.step import Step
 
 
 class GenerationParameters(BaseModel):
