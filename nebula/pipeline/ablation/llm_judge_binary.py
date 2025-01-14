@@ -22,34 +22,39 @@ class LLMJudgeBinary(Executor):
         super().__init__(config)
 
     def execute(self, pipeline_context: PipelineContext):
-        llm_answers = pipeline_context.current_data
+        llm_answers: list[list[str]] = pipeline_context.current_data
         criteria = self.config.parameters.criteria
-        kept_llm_answers = []
+        all_kept_answers: list[list[str]] = []
 
-        for answer in llm_answers:
-            judge_answers = []
+        for document_chunks in llm_answers:
+            kept_llm_answers = []
 
-            for criterion in criteria:
-                prompt = self._build_binary_judge_prompt(answer, criterion)
-                response = self._call_llm_provider(prompt)
-                judge_answers.append(response)
+            for answer in document_chunks:
+                judge_answers = []
 
-            should_keep_answer = self._check_consensus(judge_answers)
+                for criterion in criteria:
+                    prompt = self._build_binary_judge_prompt(answer, criterion)
+                    response = self._call_llm_provider(prompt)
+                    judge_answers.append(response)
 
-            if is_debug_enabled():
-                print(f"Answer: {answer}")
-                print(f"Criteria: {str(criteria)}")
-                print(f"Consensus: {self.config.parameters.consensus}")
-                print(f"Judge answers: {judge_answers}")
-                print(f"Kept: {str(should_keep_answer)}\n")
+                should_keep_answer = self._check_consensus(judge_answers)
 
-            if should_keep_answer:
-                kept_llm_answers.append(answer)
+                if is_debug_enabled():
+                    print(f"Answer: {answer}")
+                    print(f"Criteria: {str(criteria)}")
+                    print(f"Consensus: {self.config.parameters.consensus}")
+                    print(f"Judge answers: {judge_answers}")
+                    print(f"Kept: {str(should_keep_answer)}\n")
+
+                if should_keep_answer:
+                    kept_llm_answers.append(answer)
+
+            all_kept_answers.append(kept_llm_answers)
 
         pipeline_context.add_step_result(
             step_type=self.config.type,
             input_data=llm_answers,
-            output_data=kept_llm_answers,
+            output_data=all_kept_answers,
             metadata={
                 "method": self.config.method,
                 "parameters": self.config.parameters,

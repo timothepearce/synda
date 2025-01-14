@@ -8,15 +8,17 @@ class Chunk(Executor):
         super().__init__(config)
 
     def execute(self, pipeline_context: PipelineContext):
-        input_data = pipeline_context.current_data
-        chunks: list[str] = []
+        input_data: list[str] = pipeline_context.current_data
+        chunks: list[list[str]] = []
 
         size = self.config.parameters.size
-        text = input_data
 
-        while text:
-            chunks.append(text[:size])
-            text = text[size:]
+        for text in input_data:
+            text_chunks = []
+            while text:
+                text_chunks.append(text[:size])
+                text = text[size:]
+            chunks.append(text_chunks)
 
         pipeline_context.add_step_result(
             step_type=self.config.type,

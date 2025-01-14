@@ -10,23 +10,25 @@ class LLM(Executor):
         super().__init__(config)
 
     def execute(self, pipeline_context: PipelineContext):
-        chunks = pipeline_context.current_data
-        prompts: list[str] = []
-        llm_generation: list[str] = []
+        documents = pipeline_context.current_data
+        documents_llm_generation: list[list[str]] = []
 
-        for chunk in chunks:
-            prompt = self.config.parameters.template.format(chunk=chunk)
-            prompts.append(prompt)
-            llm_generation.append(self._call_llm_provider(prompt))
+        for document_chunks in documents:
+            document_llm_generation = []
+
+            for chunk in document_chunks:
+                prompt = self.config.parameters.template.format(chunk=chunk)
+                document_llm_generation.append(self._call_llm_provider(prompt))
+
+            documents_llm_generation.append(document_llm_generation)
 
         pipeline_context.add_step_result(
             step_type=self.config.type,
-            input_data=chunks,
-            output_data=llm_generation,
+            input_data=documents,
+            output_data=documents_llm_generation,
             metadata={
                 "method": self.config.method,
                 "parameters": self.config.parameters,
-                "prompts": prompts,
             }
         )
 
