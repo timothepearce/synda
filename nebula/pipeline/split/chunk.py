@@ -27,5 +27,3 @@ class Chunk(Executor):
                 "parameters": self.config.parameters
             }
         )
-
-        return pipeline_context

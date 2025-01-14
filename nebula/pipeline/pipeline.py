@@ -25,7 +25,7 @@ class Pipeline:
             if is_debug_enabled():
                 print(parser)
             executor = parser.get_executor()
-            self.data = executor.execute(self.data)
+            executor.execute(self.data)
 
     # @todo move into a source class loader
     def _load_source_data(self) -> str:
