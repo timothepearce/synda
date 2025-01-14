@@ -1,5 +1,3 @@
-import os
-
 from litellm import completion
 
 from nebula.config.parser.generation import Generation
@@ -13,14 +11,13 @@ class LLM(Executor):
 
     def execute(self, pipeline_context: PipelineContext):
         input_data = pipeline_context.current_data
+        prompts: list[str] = []
         llm_generation: list[str] = []
 
-        # @todo build prompt
-        # @todo implement call with litellm
-        # @todo downgrade litellm to avoid warning from pydantic v1
-
-        for text in input_data:
-            llm_generation.append("mocked llm answer")
+        for chunk in input_data:
+            prompt = self.config.parameters.template.format(chunk=chunk)
+            prompts.append(prompt)
+            llm_generation.append(self._call_llm_provider(prompt))
 
         pipeline_context.add_step_result(
             step_type=self.config.type,
@@ -28,6 +25,15 @@ class LLM(Executor):
             output_data=llm_generation,
             metadata={
                 "method": self.config.method,
-                "parameters": self.config.parameters
+                "parameters": self.config.parameters,
+                "prompts": prompts,
             }
         )
+
+    def _call_llm_provider(self, prompt: str) -> str:
+        response = completion(
+            model=f"{self.config.parameters.provider}/{self.config.parameters.model}",
+            messages=[{"content": prompt, "role": "user"}]
+        )
+
+        return response['choices'][0]['message']['content']
