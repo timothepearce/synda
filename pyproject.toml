@@ -12,7 +12,6 @@ pyyaml = "^6.0.2"
 pydantic = "^2.10.5"
 pandas = "^2.2.3"
 python-dotenv = "^1.0.1"
-outlines = "^0.1.12"
 litellm = "1.55.12"
 
 [build-system]
