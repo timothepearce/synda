@@ -49,27 +49,11 @@ class Pipeline:
 
         import pandas as pd
 
+        synthetic_data = [item for sublist in self.data.current_data for item in sublist]
+
         output_dict = {
-            'final_output': self.data.current_data,
+            'synthetic data': synthetic_data,
         }
-
-        for i, step in enumerate(self.data.history):
-            step_prefix = f"step_{i + 1}"
-
-            output_dict.update({
-                f"{step_prefix}_type": step.step_type,
-                f"{step_prefix}_method": step.metadata['method'],
-                f"{step_prefix}_input": step.input_data,
-                f"{step_prefix}_output": step.output_data,
-            })
-
-            params = step.metadata.get('parameters')
-            if params:
-                output_dict[f"{step_prefix}_parameters"] = str(params)
-
-            # prompts = step.metadata.get('prompts')
-            # if prompts:
-            #     output_dict[f"{step_prefix}_prompts"] = prompts
 
         df = pd.DataFrame(output_dict)
 
