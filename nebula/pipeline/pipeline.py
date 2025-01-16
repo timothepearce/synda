@@ -10,12 +10,14 @@ if TYPE_CHECKING:
 class Pipeline:
     def __init__(self, config: "Config"):
         self.config = config
+        self.input_loader = config.input.get_loader()
+        self.output_saver = config.output.get_saver()
         self.pipeline = config.pipeline
-        self.data: PipelineContext = None
+        self.pipeline_context: PipelineContext = None
 
     def execute(self):
-        input_data = self._load_input_data()
-        self.data = PipelineContext(
+        input_data = self.input_loader.load()
+        self.pipeline_context = PipelineContext(
             current_data=input_data,
             history=[]
         )
@@ -24,42 +26,6 @@ class Pipeline:
             if is_debug_enabled():
                 print(parser)
             executor = parser.get_executor()
-            executor.execute(self.data)
+            executor.execute(self.pipeline_context)
 
-        self._save_output_data()
-
-    # @todo move into a source class loader
-    def _load_input_data(self) -> list[str]:
-        input = self.config.input
-        if input.type != "csv":
-            raise ValueError(f"Input type '{input.type}' not supported")
-
-        import pandas as pd
-        df = pd.read_csv(
-            input.properties.path,
-            sep=input.properties.separator
-        )
-        return df[input.properties.target_column]
-
-    # @todo move into an output class saver
-    def _save_output_data(self) -> None:
-        output = self.config.output
-        if output.type != "csv":
-            raise ValueError(f"Destination type '{output.type}' not supported")
-
-        import pandas as pd
-
-        synthetic_data = [item for sublist in self.data.current_data for item in sublist]
-
-        output_dict = {
-            'synthetic data': synthetic_data,
-        }
-
-        df = pd.DataFrame(output_dict)
-
-        # Sauvegarder en CSV
-        df.to_csv(
-            output.properties.path,
-            sep=output.properties.separator,
-            index=False
-        )
+        self.output_saver.save(self.pipeline_context)
