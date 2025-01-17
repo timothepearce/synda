@@ -11,10 +11,12 @@ class CSVOutputSaver(OutputSaver):
         super().__init__()
 
     def save(self, pipeline_context: PipelineContext) -> None:
-        synthetic_data = [item for sublist in pipeline_context.current_data for item in sublist]
+        synthetic_data = [node.value for node in pipeline_context.current_data]
+        ablated_data = [node.is_ablated_text() for node in pipeline_context.current_data]
 
         df = pd.DataFrame({
             'synthetic data': synthetic_data,
+            'ablated': ablated_data,
         })
 
         df.to_csv(

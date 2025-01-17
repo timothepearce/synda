@@ -91,7 +91,7 @@ The Nebula pipeline consists of three main parts:
 The following features are planned for future releases:
 
 - [x] Implement a Proof of Concept
-- [ ] Implement a common interface (Node) for input and output of each step
+- [x] Implement a common interface (Node) for input and output of each step
 - [ ] Add SQLite support
 - [ ] Add setter command for .env variable (open ai key, etc.)
 - [ ] Trace each synthetic data with his historic
