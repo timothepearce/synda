@@ -8,6 +8,7 @@ from synda.config.generation import Generation
 from synda.pipeline.executor import Executor
 from synda.pipeline.node import Node
 from synda.pipeline.pipeline_context import PipelineContext
+from synda.progress_manager import ProgressManager
 from synda.utils import is_debug_enabled
 
 
@@ -21,31 +22,33 @@ class LLMJudgeCriterionBinaryAnswer(BaseModel):
 class LLMJudgeBinary(Executor):
     def __init__(self, config: Generation):
         super().__init__(config)
+        self.progress = ProgressManager("ABLATION")
 
     def execute(self, pipeline_context: PipelineContext):
         nodes = pipeline_context.current_data
         criteria = self.config.parameters.criteria
         result = []
 
-        for node in nodes:
-            judge_answers = []
+        with self.progress.task("  Ablating...", len(nodes) * len(criteria)) as advance_node:
+            for node in nodes:
+                judge_answers = []
 
-            for criterion in criteria:
-                prompt = self._build_binary_judge_prompt(node.value, criterion)
-                response = self._call_llm_provider(prompt)
-                judge_answers.append(response)
+                for criterion in criteria:
+                    prompt = self._build_binary_judge_prompt(node.value, criterion)
+                    response = self._call_llm_provider(prompt)
+                    judge_answers.append(response)
+                    advance_node()
 
-            ablated = not self._check_consensus(judge_answers)
+                ablated = not self._check_consensus(judge_answers)
+                result_node = Node(value=node.value, ablated=ablated, from_node=node)
+                result.append(result_node)
 
-            result_node = Node(value=node.value, ablated=ablated, from_node=node)
-            result.append(result_node)
-
-            if is_debug_enabled():
-                print(f"Answer: {node.value}")
-                print(f"Criteria: {str(criteria)}")
-                print(f"Consensus: {self.config.parameters.consensus}")
-                print(f"Judge answers: {judge_answers}")
-                print(f"Ablated: {result_node.is_ablated_text()}\n")
+                if is_debug_enabled():
+                    print(f"Answer: {node.value}")
+                    print(f"Criteria: {str(criteria)}")
+                    print(f"Consensus: {self.config.parameters.consensus}")
+                    print(f"Judge answers: {judge_answers}")
+                    print(f"Ablated: {result_node.is_ablated_text()}\n")
 
         pipeline_context.add_step_result(
             step_type=self.config.type,
