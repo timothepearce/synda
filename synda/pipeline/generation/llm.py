@@ -2,6 +2,7 @@ from litellm import completion
 
 from synda.config.generation import Generation
 from synda.pipeline.executor import Executor
+from synda.pipeline.node import Node
 from synda.pipeline.pipeline_context import PipelineContext
 
 
@@ -10,26 +11,20 @@ class LLM(Executor):
         super().__init__(config)
 
     def execute(self, pipeline_context: PipelineContext):
-        documents = pipeline_context.current_data
-        documents_llm_generation: list[list[str]] = []
+        nodes = pipeline_context.current_data
+        result = []
 
-        for document_chunks in documents:
-            document_llm_generation = []
-
-            for chunk in document_chunks:
-                prompt = self.config.parameters.template.format(chunk=chunk)
-                document_llm_generation.append(self._call_llm_provider(prompt))
-
-            documents_llm_generation.append(document_llm_generation)
+        for node in nodes:
+            prompt = self.config.parameters.template.format(chunk=node.value)
+            llm_answer = self._call_llm_provider(prompt)
+            result.append(Node(value=llm_answer, from_node=node))
 
         pipeline_context.add_step_result(
             step_type=self.config.type,
-            input_data=documents,
-            output_data=documents_llm_generation,
-            metadata={
-                "method": self.config.method,
-                "parameters": self.config.parameters,
-            }
+            step_method=self.config.method,
+            input_data=nodes,
+            output_data=result,
+            metadata=self.config.model_dump(),
         )
 
     def _call_llm_provider(self, prompt: str) -> str:
