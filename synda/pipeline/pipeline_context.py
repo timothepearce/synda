@@ -3,7 +3,7 @@ from pprint import pprint
 
 from dataclasses import dataclass
 
-from nebula.utils import is_debug_enabled
+from synda.utils import is_debug_enabled
 
 
 @dataclass

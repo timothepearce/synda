@@ -1,4 +1,4 @@
-from nebula.config.input.input_properties import InputProperties
+from synda.config.input.input_properties import InputProperties
 
 
 class DatabaseInputProperties(InputProperties):

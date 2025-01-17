@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "nebula"
+name = "synda"
 version = "0.1.0"
 description = "A synthetic data generator pipeline"
 authors = ["TimothePearce <timothe.pearce@gmail.com>"]
 license = "Apache 2.0"
 readme = "README.md"
 keywords = ["synthetic data", "pipeline", "llm"]
-packages = [{include = "nebula"}]
+packages = [{include = "synda"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -21,4 +21,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-nebula = "nebula.cli:main"
+nebula = "synda.cli:main"

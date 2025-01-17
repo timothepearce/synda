@@ -2,9 +2,9 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from nebula.config.output.csv import CSVOutputProperties
+from synda.config.output.csv import CSVOutputProperties
 
-from nebula.pipeline.output.output_saver import OutputSaver
+from synda.pipeline.output.output_saver import OutputSaver
 
 
 class Output(BaseModel):
@@ -13,5 +13,5 @@ class Output(BaseModel):
 
     def get_saver(self) -> OutputSaver:
         if self.type == "csv":
-            from nebula.pipeline.output.csv_output_saver import CSVOutputSaver
+            from synda.pipeline.output.csv_output_saver import CSVOutputSaver
             return CSVOutputSaver(self)

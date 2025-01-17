@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from pydantic import BaseModel
 
 if TYPE_CHECKING:
-    from nebula.pipeline.executor import Executor
+    from synda.pipeline.executor import Executor
 
 
 class Step(BaseModel, ABC):

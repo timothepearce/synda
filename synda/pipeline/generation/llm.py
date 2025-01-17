@@ -1,8 +1,8 @@
 from litellm import completion
 
-from nebula.config.generation import Generation
-from nebula.pipeline.executor import Executor
-from nebula.pipeline.pipeline_context import PipelineContext
+from synda.config.generation import Generation
+from synda.pipeline.executor import Executor
+from synda.pipeline.pipeline_context import PipelineContext
 
 
 class LLM(Executor):

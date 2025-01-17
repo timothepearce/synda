@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from nebula.pipeline.pipeline_context import PipelineContext
+from synda.pipeline.pipeline_context import PipelineContext
 
 
 class OutputSaver:

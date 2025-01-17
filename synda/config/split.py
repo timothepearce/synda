@@ -2,8 +2,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from nebula.config.step import Step
-from nebula.pipeline.executor import Executor
+from synda.config.step import Step
+from synda.pipeline.executor import Executor
 
 
 class SplitParameters(BaseModel):
@@ -22,5 +22,5 @@ class Split(Step):
 
     def get_executor(self) -> Executor:
         if self.method == "chunk":
-            from nebula.pipeline.split import Chunk
+            from synda.pipeline.split import Chunk
             return Chunk(self)

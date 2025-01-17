@@ -2,7 +2,7 @@ import os
 
 from pydantic import Field, model_validator
 
-from nebula.config.output.output_properties import OutputProperties
+from synda.config.output.output_properties import OutputProperties
 
 
 class CSVOutputProperties(OutputProperties):

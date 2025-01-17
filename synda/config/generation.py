@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from nebula.config.step import Step
+from synda.config.step import Step
 
 
 class GenerationParameters(BaseModel):
@@ -18,5 +18,5 @@ class Generation(Step):
 
     def get_executor(self):
         if self.method == "llm":
-            from nebula.pipeline.generation import LLM
+            from synda.pipeline.generation import LLM
             return LLM(self)

@@ -1,8 +1,8 @@
 import pandas as pd
 
-from nebula.config.output import Output
-from nebula.pipeline.output.output_saver import OutputSaver
-from nebula.pipeline.pipeline_context import PipelineContext
+from synda.config.output import Output
+from synda.pipeline.output.output_saver import OutputSaver
+from synda.pipeline.pipeline_context import PipelineContext
 
 
 class CSVOutputSaver(OutputSaver):

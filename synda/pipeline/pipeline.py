@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING
 
-from nebula.pipeline.pipeline_context import PipelineContext
-from nebula.utils import is_debug_enabled
+from synda.pipeline.pipeline_context import PipelineContext
+from synda.utils import is_debug_enabled
 
 if TYPE_CHECKING:
-    from nebula.config import Config
+    from synda.config import Config
 
 
 class Pipeline:

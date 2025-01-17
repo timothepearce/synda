@@ -2,8 +2,8 @@ import argparse
 
 from dotenv import load_dotenv
 
-from nebula.config import Config
-from nebula.pipeline import Pipeline
+from synda.config import Config
+from synda.pipeline import Pipeline
 
 
 load_dotenv()
@@ -11,7 +11,7 @@ load_dotenv()
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Nebula - Synthetic data generator pipeline'
+        description='Synda - Synthetic data generator pipeline'
     )
 
     parser.add_argument(

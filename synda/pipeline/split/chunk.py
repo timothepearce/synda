@@ -1,6 +1,6 @@
-from nebula.config.split import Split
-from nebula.pipeline.executor import Executor
-from nebula.pipeline.pipeline_context import PipelineContext
+from synda.config.split import Split
+from synda.pipeline.executor import Executor
+from synda.pipeline.pipeline_context import PipelineContext
 
 
 class Chunk(Executor):

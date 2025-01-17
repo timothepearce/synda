@@ -3,12 +3,12 @@ import yaml
 
 from pydantic import BaseModel
 
-from nebula.config.input import Input
-from nebula.config.output import Output
+from synda.config.input import Input
+from synda.config.output import Output
 
-from nebula.config.ablation import Ablation
-from nebula.config.generation import Generation
-from nebula.config.split import Split
+from synda.config.ablation import Ablation
+from synda.config.generation import Generation
+from synda.config.split import Split
 
 
 class Config(BaseModel):

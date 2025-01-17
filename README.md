@@ -1,4 +1,4 @@
-# Nebula
+# Synda
 
 > [!WARNING]
 > This project is in its very early stages of development and should not be used in production environments.
@@ -6,7 +6,7 @@
 > [!NOTE]
 > PR are more than welcome. Check the roadmap if you want to contribute or create discussion to submit a use-case.
 
-Nebula is a package that allows you to create synthetic data generation pipelines. 
+Synda (*synthetic data*) is a package that allows you to create synthetic data generation pipelines. 
 It is opinionated and fast by design, with plans to become highly configurable in the future.
 
 

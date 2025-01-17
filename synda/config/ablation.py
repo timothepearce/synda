@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-from nebula.config.step import Step
+from synda.config.step import Step
 
 
 class AblationParameters(BaseModel):
@@ -19,5 +19,5 @@ class Ablation(Step):
 
     def get_executor(self):
         if self.method == "llm-judge-binary":
-            from nebula.pipeline.ablation import LLMJudgeBinary
+            from synda.pipeline.ablation import LLMJudgeBinary
             return LLMJudgeBinary(self)

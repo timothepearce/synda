@@ -1,7 +1,7 @@
 from abc import abstractmethod
 
-from nebula.config.step import Step
-from nebula.pipeline.pipeline_context import PipelineContext
+from synda.config.step import Step
+from synda.pipeline.pipeline_context import PipelineContext
 
 
 class Executor:

@@ -1,7 +1,7 @@
 import pandas as pd
 
-from nebula.pipeline.input import InputLoader
-from nebula.config.input import Input
+from synda.pipeline.input import InputLoader
+from synda.config.input import Input
 
 
 class CSVInputLoader(InputLoader):

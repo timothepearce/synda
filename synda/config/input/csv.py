@@ -3,7 +3,7 @@ import os
 import pandas as pd
 from pydantic import Field, model_validator
 
-from nebula.config.input.input_properties import InputProperties
+from synda.config.input.input_properties import InputProperties
 
 
 class CSVInputProperties(InputProperties):
