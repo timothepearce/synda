@@ -13,7 +13,7 @@ It is opinionated and fast by design, with plans to become highly configurable i
 ## Installation
 
 ```bash
-pip install nebula
+pip install synda
 ```
 
 ## Usage
@@ -69,7 +69,7 @@ output:
 2. Run the following command:
 
 ```bash
-poetry run nebula -i config.yaml
+poetry run synda -i config.yaml
 ```
 
 ## Pipeline Structure
