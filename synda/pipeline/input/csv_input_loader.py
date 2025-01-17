@@ -20,7 +20,7 @@ class CSVInputLoader(InputLoader):
         result = []
 
         for value in target_list.values:
-            result.append(Node(value=value, history=None))
+            result.append(Node(value=value, from_node=None))
 
         pipeline_context.add_step_result(
             step_type="loader",
