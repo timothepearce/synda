@@ -13,7 +13,7 @@ It is opinionated and fast by design, with plans to become highly configurable i
 ## Installation
 
 ```bash
-pip install synda
+poetry add synda
 ```
 
 ## Usage
@@ -92,8 +92,9 @@ The following features are planned for future releases:
 
 - [x] Implement a Proof of Concept
 - [ ] Implement a common interface (Node) for input and output of each step
-- [ ] Trace each synthetic data with his historic
 - [ ] Add SQLite support
+- [ ] Add setter command for .env variable (open ai key, etc.)
+- [ ] Trace each synthetic data with his historic
 - [ ] Store each execution and step in DB
 - [ ] Allow pausing and resuming pipelines
 - [ ] Enable caching of each step's output
