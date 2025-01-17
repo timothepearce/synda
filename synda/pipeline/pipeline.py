@@ -13,14 +13,10 @@ class Pipeline:
         self.input_loader = config.input.get_loader()
         self.output_saver = config.output.get_saver()
         self.pipeline = config.pipeline
-        self.pipeline_context: PipelineContext = None
+        self.pipeline_context: PipelineContext = PipelineContext()
 
     def execute(self):
-        input_data = self.input_loader.load()
-        self.pipeline_context = PipelineContext(
-            current_data=input_data,
-            history=[]
-        )
+        self.input_loader.load(self.pipeline_context)
 
         for parser in self.pipeline:
             if is_debug_enabled():
