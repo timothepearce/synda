@@ -66,10 +66,16 @@ output:
     separator: "\t"
 ```
 
-2. Run the following command:
+2. Add a model provider:
 
 ```bash
-poetry run synda -i config.yaml
+poetry run synda provider add openai --api-key [YOUR_API_KEY]
+```
+
+3. Generate some synthetic data:
+
+```bash
+poetry run synda generate config.yaml
 ```
 
 ## Pipeline Structure
@@ -93,13 +99,14 @@ The following features are planned for future releases:
 - [x] Implement a Proof of Concept
 - [x] Implement a common interface (Node) for input and output of each step
 - [ ] Add SQLite support
-- [ ] Add setter command for .env variable (open ai key, etc.)
-- [ ] Trace each synthetic data with his historic
+- [ ] Add setter command for provider variable (openai, etc.)
 - [ ] Store each execution and step in DB
 - [ ] Allow pausing and resuming pipelines
 - [ ] Enable caching of each step's output
-- [ ] Implement scriptable step for developer
+- [ ] Trace each synthetic data with his historic
 - [ ] Design other step & methods
+- [ ] Implement custom scriptable step for developer
+- [ ] Add a programmatic API
 
 ## License
 
