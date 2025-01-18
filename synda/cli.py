@@ -1,31 +1,43 @@
-import argparse
+from pathlib import Path
 
+import typer
 from dotenv import load_dotenv
 
 from synda.config import Config
+from synda.database import init_db
 from synda.pipeline import Pipeline
 
 
-load_dotenv()
+app = typer.Typer(
+    name="synda",
+    help="Synthetic data generator pipeline",
+    add_completion=False,
+)
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description='Synda - Synthetic data generator pipeline'
-    )
-
-    parser.add_argument(
-        '-i', '--input',
-        required=True,
-        help='Path to YAML file'
-    )
-
-    args = parser.parse_args()
-    config = Config.load_config(args.input)
+@app.command("generate")
+def generate(
+    input_file: Path = typer.Option(
+        ...,
+        "--input", "-i",
+        help="Path to YAML configuration file",
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        resolve_path=True,
+    ),
+):
+    """Generate synthetic data based on a config file"""
+    config = Config.load_config(str(input_file))
     pipeline = Pipeline(config)
-
     pipeline.execute()
 
 
-if __name__ == '__main__':
+def main():
+    load_dotenv()
+    init_db()
+    app()
+
+
+if __name__ == "__main__":
     main()
