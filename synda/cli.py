@@ -10,16 +10,33 @@ from synda.pipeline import Pipeline
 
 app = typer.Typer(
     name="synda",
-    help="Synthetic data generator pipeline",
+    help="A synthetic data generator pipeline CLI.",
     add_completion=False,
 )
 
 
+@app.command("provider")
+def provider(
+    action: str = typer.Argument(
+        help="Add or delete"
+    ),
+    model_provider: str = typer.Argument(
+        ...,
+        help="Model provider name"
+    ),
+    api_key: str = typer.Option(
+        ...,
+        help="API key for model provider",
+    )
+):
+    """Add or delete a model provider."""
+    print(f"@todo: {action} the {model_provider} with key: {api_key}.")
+
+
 @app.command("generate")
 def generate(
-    input_file: Path = typer.Option(
+    config_file: Path = typer.Argument(
         ...,
-        "--input", "-i",
         help="Path to YAML configuration file",
         exists=True,
         file_okay=True,
@@ -27,8 +44,8 @@ def generate(
         resolve_path=True,
     ),
 ):
-    """Generate synthetic data based on a config file"""
-    config = Config.load_config(str(input_file))
+    """Run a pipeline with provided configuration."""
+    config = Config.load_config(config_file)
     pipeline = Pipeline(config)
     pipeline.execute()
 

@@ -1,4 +1,6 @@
 import sys
+from pathlib import Path
+
 import yaml
 
 from pydantic import BaseModel
@@ -17,7 +19,7 @@ class Config(BaseModel):
     output: Output
 
     @staticmethod
-    def load_config(config_path: str) -> "Config":
+    def load_config(config_path: Path) -> "Config":
         try:
             with open(config_path, 'r', encoding='utf-8') as file:
                 return Config.model_validate(yaml.safe_load(file))
