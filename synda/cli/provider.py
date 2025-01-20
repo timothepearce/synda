@@ -26,7 +26,7 @@ def add_provider(session: Session, name: str, api_key: str | None) -> None:
         typer.secho(f"Provider {name} already exists", fg=typer.colors.YELLOW)
         raise typer.Exit(1)
 
-    provider = Provider(name=name, token=api_key)
+    provider = Provider(name=name, api_key=api_key)
     session.add(provider)
     session.commit()
     typer.secho(f"Successfully added provider: {name}", fg=typer.colors.GREEN)
@@ -53,7 +53,7 @@ def update_provider(session: Session, name: str, api_key: str) -> None:
         typer.secho(f"Provider {name} not found", fg=typer.colors.RED)
         raise typer.Exit(1)
 
-    provider.token = api_key
+    provider.api_key = api_key
     session.add(provider)
     session.commit()
     typer.secho(f"Successfully updated provider: {name}", fg=typer.colors.GREEN)

@@ -5,6 +5,7 @@ from litellm import completion
 from pydantic import BaseModel
 
 from synda.config.generation import Generation
+from synda.model.provider import Provider
 from synda.pipeline.executor import Executor
 from synda.pipeline.node import Node
 from synda.pipeline.pipeline_context import PipelineContext
@@ -23,6 +24,7 @@ class LLMJudgeBinary(Executor):
     def __init__(self, config: Generation):
         super().__init__(config)
         self.progress = ProgressManager("ABLATION")
+        self.provider = Provider.get(config.parameters.provider)
 
     def execute(self, pipeline_context: PipelineContext):
         nodes = pipeline_context.current_data
@@ -60,9 +62,10 @@ class LLMJudgeBinary(Executor):
 
     def _call_llm_provider(self, prompt: str) -> LLMJudgeCriterionBinaryAnswer:
         response = completion(
-            model=f"{self.config.parameters.provider}/{self.config.parameters.model}",
+            model=f"{self.provider.name}/{self.config.parameters.model}",
             messages=[{"content": prompt, "role": "user"}],
-            response_format=LLMJudgeCriterionBinaryAnswer
+            api_key=self.provider.api_key,
+            response_format=LLMJudgeCriterionBinaryAnswer,
         )
         answer = json.loads(response['choices'][0]['message']['content'])
         return LLMJudgeCriterionBinaryAnswer(**answer)
