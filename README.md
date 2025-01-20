@@ -90,11 +90,15 @@ The Nebula pipeline consists of three main parts:
 - **Pipeline**: Sequence of transformation and generation steps
 - **Output**: Configuration for the generated data output
 
-### Available Steps
+### Available Pipeline Steps
 
-- **split**: Breaks down data into chunks of defined size
-- **generation**: Generates content using LLM models
-- **ablation**: Filters data based on defined criteria
+Currently, Synda supports three pipeline steps (as shown in the example above):
+
+- **split**: Breaks down data into chunks of defined size (`method: chunk`)
+- **generation**: Generates content using LLM models (`method: llm`)
+- **ablation**: Filters data based on defined criteria (`method: llm-judge-binary`)
+
+More steps will be added in future releases.
 
 ## Roadmap
 
