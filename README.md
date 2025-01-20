@@ -98,14 +98,15 @@ The following features are planned for future releases:
 
 - [x] Implement a Proof of Concept
 - [x] Implement a common interface (Node) for input and output of each step
-- [ ] Add SQLite support
-- [ ] Add setter command for provider variable (openai, etc.)
+- [x] Add SQLite support
+- [x] Add setter command for provider variable (openai, etc.)
 - [ ] Store each execution and step in DB
 - [ ] Allow pausing and resuming pipelines
 - [ ] Enable caching of each step's output
 - [ ] Trace each synthetic data with his historic
 - [ ] Design other step & methods
 - [ ] Implement custom scriptable step for developer
+- [ ] Add Ollama, VLLM and transformers provider
 - [ ] Add a programmatic API
 
 ## License
