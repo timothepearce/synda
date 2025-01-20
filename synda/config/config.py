@@ -27,7 +27,7 @@ class Config(BaseModel):
     @staticmethod
     def load_config(config_path: Path) -> "Config":
         try:
-            with open(config_path, 'r', encoding='utf-8') as file:
+            with open(config_path, "r", encoding="utf-8") as file:
                 return Config.model_validate(yaml.safe_load(file))
         except yaml.YAMLError as e:
             print(f"Error in YAML file: {e}")
@@ -42,12 +42,12 @@ class Config(BaseModel):
             typer.secho(
                 f"The following providers are not configured: {str(e)}.\n"
                 "Please add them using 'synda provider add <name> --api-key <key>'",
-                fg=typer.colors.RED
+                fg=typer.colors.RED,
             )
             raise typer.Exit(1)
 
-    @model_validator(mode='after')
-    def validate_providers(self) -> 'Config':
+    @model_validator(mode="after")
+    def validate_providers(self) -> "Config":
         required_providers = set()
         for step in self.pipeline:
             if isinstance(step, (Generation, Ablation)):
@@ -57,7 +57,9 @@ class Config(BaseModel):
             return self
 
         with Session(engine) as session:
-            statement = select(Provider).where(Provider.name.in_(required_providers))  # noqa
+            statement = select(Provider).where(
+                Provider.name.in_(required_providers)
+            )  # noqa
             existing_providers = {provider.name for provider in session.exec(statement)}
 
             missing_providers = required_providers - existing_providers

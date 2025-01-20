@@ -18,7 +18,14 @@ class PipelineContext(BaseModel):
     current_data: list[Node] | None = None
     history: list[StepResult] = Field(default_factory=list)
 
-    def add_step_result(self, step_type: str, step_method: str, input_data: any, output_data: any, metadata: dict):
+    def add_step_result(
+        self,
+        step_type: str,
+        step_method: str,
+        input_data: any,
+        output_data: any,
+        metadata: dict,
+    ):
         step_result = StepResult(
             step_type=step_type,
             step_method=step_method,

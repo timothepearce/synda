@@ -12,10 +12,7 @@ class CSVInputLoader(InputLoader):
         super().__init__()
 
     def load(self, pipeline_context: PipelineContext) -> list[Node]:
-        df = pd.read_csv(
-            self.properties.path,
-            sep=self.properties.separator
-        )
+        df = pd.read_csv(self.properties.path, sep=self.properties.separator)
         target_list = df[self.properties.target_column]
         result = []
 
@@ -27,5 +24,5 @@ class CSVInputLoader(InputLoader):
             step_method="csv",
             input_data=None,
             output_data=result,
-            metadata=self.properties.model_dump()
+            metadata=self.properties.model_dump(),
         )

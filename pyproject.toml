@@ -1,15 +1,17 @@
 [tool.poetry]
 name = "synda"
-version = "0.1.2"
-description = "A synthetic data generator pipeline"
-authors = ["TimothePearce <timothe.pearce@gmail.com>"]
+version = "0.2.0"
+description = "A CLI for generating synthetic data"
+authors = ["Timothé Pearce <timothe.pearce@gmail.com>"]
 license = "Apache 2.0"
 readme = "README.md"
 keywords = ["synthetic data", "pipeline", "llm"]
+repository = "https://github.com/timothepearce/synda"
+documentation = "https://github.com/timothepearce/synda"
 packages = [{include = "synda"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 pyyaml = "^6.0.2"
 pydantic = "^2.10.5"
 pandas = "^2.2.3"
@@ -18,6 +20,9 @@ litellm = "1.55.12"
 rich = "^13.9.4"
 sqlmodel = "^0.0.22"
 typer = {extras = ["all"], version = "^0.15.1"}
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.10.0"
 
 [build-system]
 requires = ["poetry-core"]

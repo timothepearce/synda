@@ -40,4 +40,4 @@ class LLM(Executor):
             api_key=self.provider.api_key,
         )
 
-        return response['choices'][0]['message']['content']
+        return response["choices"][0]["message"]["content"]

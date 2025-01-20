@@ -31,7 +31,9 @@ class LLMJudgeBinary(Executor):
         criteria = self.config.parameters.criteria
         result = []
 
-        with self.progress.task("  Ablating...", len(nodes) * len(criteria)) as advance_node:
+        with self.progress.task(
+            "  Ablating...", len(nodes) * len(criteria)
+        ) as advance_node:
             for node in nodes:
                 judge_answers = []
 
@@ -67,12 +69,16 @@ class LLMJudgeBinary(Executor):
             api_key=self.provider.api_key,
             response_format=LLMJudgeCriterionBinaryAnswer,
         )
-        answer = json.loads(response['choices'][0]['message']['content'])
+        answer = json.loads(response["choices"][0]["message"]["content"])
         return LLMJudgeCriterionBinaryAnswer(**answer)
 
-    def _check_consensus(self, judge_answers: list[LLMJudgeCriterionBinaryAnswer]) -> bool:
+    def _check_consensus(
+        self, judge_answers: list[LLMJudgeCriterionBinaryAnswer]
+    ) -> bool:
         consensus = self.config.parameters.consensus.lower()
-        positive_answers = sum(1 for answer in judge_answers if answer.is_positive_answer())
+        positive_answers = sum(
+            1 for answer in judge_answers if answer.is_positive_answer()
+        )
         total_answers = len(judge_answers)
 
         if total_answers == 0:

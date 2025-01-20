@@ -14,4 +14,5 @@ class Output(BaseModel):
     def get_saver(self) -> OutputSaver:
         if self.type == "csv":
             from synda.pipeline.output.csv_output_saver import CSVOutputSaver
+
             return CSVOutputSaver(self)

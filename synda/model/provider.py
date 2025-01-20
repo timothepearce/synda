@@ -20,7 +20,7 @@ class Provider(SQLModel, table=True):
                 typer.secho(
                     f"Provider {name} not found in database. "
                     "Please add it using 'synda provider add <name> --api-key <key>'",
-                    fg=typer.colors.RED
+                    fg=typer.colors.RED,
                 )
                 raise typer.Exit(1)
 

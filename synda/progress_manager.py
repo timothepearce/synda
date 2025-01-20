@@ -6,7 +6,7 @@ from rich.progress import (
     TaskProgressColumn,
     SpinnerColumn,
     MofNCompleteColumn,
-    TimeElapsedColumn
+    TimeElapsedColumn,
 )
 from rich.console import Console
 from contextlib import contextmanager

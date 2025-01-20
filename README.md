@@ -12,8 +12,12 @@ It is opinionated and fast by design, with plans to become highly configurable i
 
 ## Installation
 
+Synda requires Python 3.10 or higher.
+
+You can install Synda using pip:
+
 ```bash
-poetry add synda
+pip install synda
 ```
 
 ## Usage
@@ -24,7 +28,7 @@ poetry add synda
 input:
   type: csv
   properties:
-    path: tests/stubs/simple_pipeline/source.csv
+    path: source.csv  # relative path to your source file
     target_column: content
     separator: "\t"
 
@@ -69,13 +73,13 @@ output:
 2. Add a model provider:
 
 ```bash
-poetry run synda provider add openai --api-key [YOUR_API_KEY]
+synda provider add openai --api-key [YOUR_API_KEY]
 ```
 
 3. Generate some synthetic data:
 
 ```bash
-poetry run synda generate config.yaml
+synda generate config.yaml
 ```
 
 ## Pipeline Structure
@@ -108,6 +112,7 @@ The following features are planned for future releases:
 - [ ] Implement custom scriptable step for developer
 - [ ] Add Ollama, VLLM and transformers provider
 - [ ] Add a programmatic API
+- [ ] Use Ray for large workload
 
 ## License
 

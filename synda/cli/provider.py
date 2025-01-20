@@ -60,26 +60,24 @@ def update_provider(session: Session, name: str, api_key: str) -> None:
 
 
 def provider_command(
-        action: ProviderAction = typer.Argument(
-            ...,
-            help="Action to perform: add, delete, or update"
-        ),
-        model_provider: str = typer.Argument(
-            ...,
-            help="Model provider name"
-        ),
-        api_key: str = typer.Option(
-            None,
-            "--api-key",
-            "-k",
-            help="API key for model provider",
-        )
+    action: ProviderAction = typer.Argument(
+        ..., help="Action to perform: add, delete, or update"
+    ),
+    model_provider: str = typer.Argument(..., help="Model provider name"),
+    api_key: str = typer.Option(
+        None,
+        "--api-key",
+        "-k",
+        help="API key for model provider",
+    ),
 ):
     with Session(engine) as session:
         action_handlers = {
             ProviderAction.ADD: lambda: add_provider(session, model_provider, api_key),
             ProviderAction.DELETE: lambda: delete_provider(session, model_provider),
-            ProviderAction.UPDATE: lambda: update_provider(session, model_provider, api_key)
+            ProviderAction.UPDATE: lambda: update_provider(
+                session, model_provider, api_key
+            ),
         }
 
         action_handlers[action]()

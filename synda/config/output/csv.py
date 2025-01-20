@@ -9,8 +9,8 @@ class CSVOutputProperties(OutputProperties):
     path: str
     separator: str = Field(default=";")
 
-    @model_validator(mode='after')
-    def validate_properties(self) -> 'CSVOutputProperties':
+    @model_validator(mode="after")
+    def validate_properties(self) -> "CSVOutputProperties":
         self._validate_path()
         return self
 

@@ -15,4 +15,5 @@ class Input(BaseModel):
     def get_loader(self) -> InputLoader:
         if self.type == "csv":
             from synda.pipeline.input.csv_input_loader import CSVInputLoader
+
             return CSVInputLoader(self)
