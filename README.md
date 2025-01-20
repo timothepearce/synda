@@ -66,7 +66,7 @@ pipeline:
 output:
   type: csv
   properties:
-    path: tests/stubs/simple_pipeline/output.csv
+    path: output.csv
     separator: "\t"
 ```
 
