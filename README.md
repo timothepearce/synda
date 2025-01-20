@@ -12,8 +12,12 @@ It is opinionated and fast by design, with plans to become highly configurable i
 
 ## Installation
 
+Synda requires Python 3.10 or higher.
+
+You can install Synda using pip:
+
 ```bash
-poetry add synda
+pip install synda
 ```
 
 ## Usage
@@ -24,7 +28,7 @@ poetry add synda
 input:
   type: csv
   properties:
-    path: tests/stubs/simple_pipeline/source.csv
+    path: source.csv  # relative path to your source file
     target_column: content
     separator: "\t"
 
@@ -66,10 +70,16 @@ output:
     separator: "\t"
 ```
 
-2. Run the following command:
+2. Add a model provider:
 
 ```bash
-poetry run synda -i config.yaml
+synda provider add openai --api-key [YOUR_API_KEY]
+```
+
+3. Generate some synthetic data:
+
+```bash
+synda generate config.yaml
 ```
 
 ## Pipeline Structure
@@ -80,11 +90,15 @@ The Nebula pipeline consists of three main parts:
 - **Pipeline**: Sequence of transformation and generation steps
 - **Output**: Configuration for the generated data output
 
-### Available Steps
+### Available Pipeline Steps
 
-- **split**: Breaks down data into chunks of defined size
-- **generation**: Generates content using LLM models
-- **ablation**: Filters data based on defined criteria
+Currently, Synda supports three pipeline steps (as shown in the example above):
+
+- **split**: Breaks down data into chunks of defined size (`method: chunk`)
+- **generation**: Generates content using LLM models (`method: llm`)
+- **ablation**: Filters data based on defined criteria (`method: llm-judge-binary`)
+
+More steps will be added in future releases.
 
 ## Roadmap
 
@@ -92,14 +106,17 @@ The following features are planned for future releases:
 
 - [x] Implement a Proof of Concept
 - [x] Implement a common interface (Node) for input and output of each step
-- [ ] Add SQLite support
-- [ ] Add setter command for .env variable (open ai key, etc.)
-- [ ] Trace each synthetic data with his historic
+- [x] Add SQLite support
+- [x] Add setter command for provider variable (openai, etc.)
 - [ ] Store each execution and step in DB
 - [ ] Allow pausing and resuming pipelines
 - [ ] Enable caching of each step's output
-- [ ] Implement scriptable step for developer
+- [ ] Trace each synthetic data with his historic
 - [ ] Design other step & methods
+- [ ] Implement custom scriptable step for developer
+- [ ] Add Ollama, VLLM and transformers provider
+- [ ] Add a programmatic API
+- [ ] Use Ray for large workload
 
 ## License
 

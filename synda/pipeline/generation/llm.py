@@ -1,6 +1,7 @@
 from litellm import completion
 
 from synda.config.generation import Generation
+from synda.model.provider import Provider
 from synda.pipeline.executor import Executor
 from synda.pipeline.node import Node
 from synda.pipeline.pipeline_context import PipelineContext
@@ -11,6 +12,7 @@ class LLM(Executor):
     def __init__(self, config: Generation):
         super().__init__(config)
         self.progress = ProgressManager("GENERATION")
+        self.provider = Provider.get(config.parameters.provider)
 
     def execute(self, pipeline_context: PipelineContext):
         nodes = pipeline_context.current_data
@@ -33,8 +35,9 @@ class LLM(Executor):
 
     def _call_llm_provider(self, prompt: str) -> str:
         response = completion(
-            model=f"{self.config.parameters.provider}/{self.config.parameters.model}",
-            messages=[{"content": prompt, "role": "user"}]
+            model=f"{self.provider.name}/{self.config.parameters.model}",
+            messages=[{"content": prompt, "role": "user"}],
+            api_key=self.provider.api_key,
         )
 
-        return response['choices'][0]['message']['content']
+        return response["choices"][0]["message"]["content"]

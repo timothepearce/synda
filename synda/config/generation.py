@@ -19,4 +19,5 @@ class Generation(Step):
     def get_executor(self):
         if self.method == "llm":
             from synda.pipeline.generation import LLM
+
             return LLM(self)
