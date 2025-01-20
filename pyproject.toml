@@ -24,4 +24,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-synda = "synda.cli:main"
+synda = "synda.cli.app:main"
