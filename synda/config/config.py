@@ -58,8 +58,8 @@ class Config(BaseModel):
 
         with Session(engine) as session:
             statement = select(Provider).where(
-                Provider.name.in_(required_providers)
-            )  # noqa
+                Provider.name.in_(required_providers)  # noqa
+            )
             existing_providers = {provider.name for provider in session.exec(statement)}
 
             missing_providers = required_providers - existing_providers
