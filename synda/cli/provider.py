@@ -1,10 +1,8 @@
 from enum import Enum
-from typing import Optional
 
 import typer
-from sqlmodel import Session, select
+from sqlalchemy.exc import IntegrityError, NoResultFound
 
-from synda.database import engine
 from synda.model.provider import Provider
 
 
@@ -14,49 +12,41 @@ class ProviderAction(str, Enum):
     UPDATE = "update"
 
 
-def get_provider_by_name(session: Session, name: str) -> Optional[Provider]:
-    """Récupère un provider par son nom."""
-    statement = select(Provider).where(Provider.name == name)
-    return session.exec(statement).first()
-
-
-def add_provider(session: Session, name: str, api_key: str | None) -> None:
-    existing = get_provider_by_name(session, name)
-    if existing:
+def add_provider(name: str, api_key: str | None) -> None:
+    try:
+        Provider.create(name=name, api_key=api_key)
+        typer.secho(f"Successfully added provider: {name}", fg=typer.colors.GREEN)
+    except IntegrityError as e:
         typer.secho(f"Provider {name} already exists", fg=typer.colors.YELLOW)
         raise typer.Exit(1)
 
-    provider = Provider(name=name, api_key=api_key)
-    session.add(provider)
-    session.commit()
-    typer.secho(f"Successfully added provider: {name}", fg=typer.colors.GREEN)
 
-
-def delete_provider(session: Session, name: str) -> None:
-    provider = get_provider_by_name(session, name)
-    if not provider:
-        typer.secho(f"Provider {name} not found", fg=typer.colors.RED)
+def delete_provider(name: str) -> None:
+    try:
+        provider = Provider.get(name)
+        provider.delete()
+        typer.secho(f"Successfully deleted provider: {name}", fg=typer.colors.GREEN)
+    except NoResultFound as e:
+        typer.secho(
+            f"Provider {name} not found in database. "
+            "Please add it using 'synda provider add <name> --api-key <key>'",
+            fg=typer.colors.RED,
+        )
         raise typer.Exit(1)
 
-    session.delete(provider)
-    session.commit()
-    typer.secho(f"Successfully deleted provider: {name}", fg=typer.colors.GREEN)
 
-
-def update_provider(session: Session, name: str, api_key: str) -> None:
+def update_provider(name: str, api_key: str) -> None:
     if not api_key:
         typer.secho("API key is required for updating a provider", fg=typer.colors.RED)
         raise typer.Exit(1)
 
-    provider = get_provider_by_name(session, name)
-    if not provider:
+    try:
+        provider = Provider.get(name)
+        provider.update(api_key=api_key)
+        typer.secho(f"Successfully updated provider: {name}", fg=typer.colors.GREEN)
+    except NoResultFound as e:
         typer.secho(f"Provider {name} not found", fg=typer.colors.RED)
         raise typer.Exit(1)
-
-    provider.api_key = api_key
-    session.add(provider)
-    session.commit()
-    typer.secho(f"Successfully updated provider: {name}", fg=typer.colors.GREEN)
 
 
 def provider_command(
@@ -71,13 +61,10 @@ def provider_command(
         help="API key for model provider",
     ),
 ):
-    with Session(engine) as session:
-        action_handlers = {
-            ProviderAction.ADD: lambda: add_provider(session, model_provider, api_key),
-            ProviderAction.DELETE: lambda: delete_provider(session, model_provider),
-            ProviderAction.UPDATE: lambda: update_provider(
-                session, model_provider, api_key
-            ),
-        }
+    action_handlers = {
+        ProviderAction.ADD: lambda: add_provider(model_provider, api_key),
+        ProviderAction.DELETE: lambda: delete_provider(model_provider),
+        ProviderAction.UPDATE: lambda: update_provider(model_provider, api_key)
+    }
 
-        action_handlers[action]()
+    action_handlers[action]()
