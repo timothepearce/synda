@@ -2,8 +2,9 @@ from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from sqlmodel import Column, SQLModel, Field, Relationship, JSON
+from sqlmodel import Column, SQLModel, Field, Relationship, JSON, Session
 
+from synda.database import engine
 from synda.pipeline.node import Node
 
 if TYPE_CHECKING:
@@ -40,6 +41,14 @@ class Step(SQLModel, table=True):
     run_at: datetime | None = Field()
 
     run: "Run" = Relationship(back_populates="steps")
+
+    def update_status(self, status: StepStatus) -> "Step":
+        with Session(engine) as session:
+            self.status = status
+            session.add(self)
+            session.commit()
+            session.refresh(self)
+            return self
 
     def get_step_config(self) -> "StepConfig":
         # @todo reimplement with dynamic concrete class resolution and instanciation

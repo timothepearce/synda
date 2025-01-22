@@ -27,7 +27,7 @@ class Pipeline:
                     print(step.get_step_config())
 
                 executor = step.get_step_config().get_executor(step)
-                executor.execute(self.pipeline_context)
+                executor.execute_and_update_step(self.pipeline_context)
 
             self.output_saver.save(self.pipeline_context)
 
