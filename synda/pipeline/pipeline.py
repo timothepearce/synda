@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 class Pipeline:
     def __init__(self, config: "Config"):
         self.config = config
-        self.run = Run.create(config)
+        self.run = Run.create_with_steps(config)
         self.input_loader = config.input.get_loader()
         self.output_saver = config.output.get_saver()
         self.pipeline = config.pipeline
@@ -21,11 +21,12 @@ class Pipeline:
         try:
             self.input_loader.load(self.pipeline_context)
 
-            for parser in self.pipeline:
+            for parser, step in zip(self.pipeline, self.run.steps):
                 if is_debug_enabled():
                     print(parser)
+
                 executor = parser.get_executor()
-                executor.execute(self.pipeline_context)
+                executor.execute(self.pipeline_context, step)
 
             self.output_saver.save(self.pipeline_context)
 
