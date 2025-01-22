@@ -21,12 +21,13 @@ class Pipeline:
         try:
             self.input_loader.load(self.pipeline_context)
 
-            for parser, step in zip(self.pipeline, self.run.steps):
+            for step in self.run.steps:
+                print(step)
                 if is_debug_enabled():
-                    print(parser)
+                    print(step.get_step_config())
 
-                executor = parser.get_executor()
-                executor.execute(self.pipeline_context, step)
+                executor = step.get_step_config().get_executor(step)
+                executor.execute(self.pipeline_context)
 
             self.output_saver.save(self.pipeline_context)
 

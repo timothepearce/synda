@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 from synda.config.step import Step
+from synda.model.step import Step as StepModel
 
 
 class AblationParameters(BaseModel):
@@ -17,8 +18,8 @@ class Ablation(Step):
     method: Literal["llm-judge-binary"]
     parameters: AblationParameters
 
-    def get_executor(self):
+    def get_executor(self, step_model: StepModel):
         if self.method == "llm-judge-binary":
             from synda.pipeline.ablation import LLMJudgeBinary
 
-            return LLMJudgeBinary(self)
+            return LLMJudgeBinary(step_model)

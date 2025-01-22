@@ -1,7 +1,7 @@
 from litellm import completion
 
-from synda.config.generation import Generation
 from synda.model.provider import Provider
+from synda.model.step import Step
 from synda.pipeline.executor import Executor
 from synda.pipeline.node import Node
 from synda.pipeline.pipeline_context import PipelineContext
@@ -9,10 +9,10 @@ from synda.progress_manager import ProgressManager
 
 
 class LLM(Executor):
-    def __init__(self, config: Generation):
-        super().__init__(config)
+    def __init__(self, step_model: Step):
+        super().__init__(step_model)
         self.progress = ProgressManager("GENERATION")
-        self.provider = Provider.get(config.parameters.provider)
+        self.provider = Provider.get(self.config.parameters.provider)
 
     def execute(self, pipeline_context: PipelineContext):
         nodes = pipeline_context.current_data

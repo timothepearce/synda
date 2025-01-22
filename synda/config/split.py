@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from synda.config.step import Step
+from synda.model.step import Step as StepModel
 from synda.pipeline.executor import Executor
 
 
@@ -17,8 +18,8 @@ class Split(Step):
     method: Literal["chunk"]
     parameters: SplitParameters
 
-    def get_executor(self) -> Executor:
+    def get_executor(self, step_model: StepModel) -> Executor:
         if self.method == "chunk":
             from synda.pipeline.split import Chunk
 
-            return Chunk(self)
+            return Chunk(step_model)

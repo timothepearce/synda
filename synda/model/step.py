@@ -7,6 +7,7 @@ from sqlmodel import Column, SQLModel, Field, Relationship, JSON
 from synda.pipeline.node import Node
 
 if TYPE_CHECKING:
+    from synda.config.step import Step as StepConfig
     from synda.model.run import Run
 
 
@@ -23,7 +24,7 @@ class Step(SQLModel, table=True):
     position: int = Field()
     step_name: str = Field(index=True)
     step_method: str = Field()
-    step_parameters: dict = Field(
+    step_config: "StepConfig" = Field(
         default_factory=dict,
         sa_column=Column(JSON)
     )
@@ -39,3 +40,15 @@ class Step(SQLModel, table=True):
     run_at: datetime | None = Field()
 
     run: "Run" = Relationship(back_populates="steps")
+
+    def get_step_config(self) -> "StepConfig":
+        # @todo reimplement with dynamic concrete class resolution and instanciation
+        if self.step_name == "split":
+            from synda.config.split import Split
+            return Split.model_validate(self.step_config)
+        elif self.step_name == "generation":
+            from synda.config.generation import Generation
+            return Generation.model_validate(self.step_config)
+        elif self.step_name == "ablation":
+            from synda.config.ablation import Ablation
+            return Ablation.model_validate(self.step_config)
