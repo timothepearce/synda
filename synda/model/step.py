@@ -42,13 +42,27 @@ class Step(SQLModel, table=True):
 
     run: "Run" = Relationship(back_populates="steps")
 
-    def update_status(self, status: StepStatus) -> "Step":
+    def update_execution(self, status: StepStatus, input_data: list[Node] | None = None, output_data: list[Node] | None = None) -> "Step":
         with Session(engine) as session:
             self.status = status
+
+            if input_data is not None:
+                self.input_data = [node.model_dump() for node in input_data]
+
+            if output_data is not None:
+                self.output_data = [node.model_dump() for node in output_data]
+
             session.add(self)
             session.commit()
             session.refresh(self)
+
             return self
+
+    def update_input_data(self):
+        pass
+
+    def update_output_data(self):
+        pass
 
     def get_step_config(self) -> "StepConfig":
         # @todo reimplement with dynamic concrete class resolution and instanciation

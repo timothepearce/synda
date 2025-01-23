@@ -1,8 +1,8 @@
 import pandas as pd
 
 from synda.config.output import Output
+from synda.pipeline.node import Node
 from synda.pipeline.output.output_saver import OutputSaver
-from synda.pipeline.pipeline_context import PipelineContext
 
 
 class CSVOutputSaver(OutputSaver):
@@ -10,10 +10,10 @@ class CSVOutputSaver(OutputSaver):
         self.properties = output_config.properties
         super().__init__()
 
-    def save(self, pipeline_context: PipelineContext) -> None:
-        synthetic_data = [node.value for node in pipeline_context.current_data]
+    def save(self, input_data: list[Node]) -> None:
+        synthetic_data = [node.value for node in input_data]
         ablated_data = [
-            node.is_ablated_text() for node in pipeline_context.current_data
+            node.is_ablated_text() for node in input_data
         ]
 
         df = pd.DataFrame(

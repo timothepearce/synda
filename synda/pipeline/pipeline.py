@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 
 from synda.model.run import Run, RunStatus
-from synda.pipeline.pipeline_context import PipelineContext
 from synda.utils import is_debug_enabled
 
 if TYPE_CHECKING:
@@ -15,21 +14,19 @@ class Pipeline:
         self.input_loader = config.input.get_loader()
         self.output_saver = config.output.get_saver()
         self.pipeline = config.pipeline
-        self.pipeline_context: PipelineContext = PipelineContext()
 
     def execute(self):
         try:
-            self.input_loader.load(self.pipeline_context)
+            input_data = self.input_loader.load()
 
             for step in self.run.steps:
-                print(step)
                 if is_debug_enabled():
-                    print(step.get_step_config())
+                    print(step)
 
                 executor = step.get_step_config().get_executor(step)
-                executor.execute_and_update_step(self.pipeline_context)
+                input_data = executor.execute_and_update_step(input_data)
 
-            self.output_saver.save(self.pipeline_context)
+            self.output_saver.save(input_data)
 
             self.run.update(status=RunStatus.FINISHED)
         except Exception as e:
