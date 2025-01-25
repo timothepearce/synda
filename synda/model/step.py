@@ -67,8 +67,8 @@ class Step(SQLModel, table=True):
     def get_step_config(self) -> "StepConfig":
         # @todo reimplement with dynamic concrete class resolution and instanciation
         if self.step_name == "split":
-            from synda.config.split import Split
-            return Split.model_validate(self.step_config)
+            from synda.config.split import split_adapter
+            return split_adapter.validate_python(self.step_config)
         elif self.step_name == "generation":
             from synda.config.generation import Generation
             return Generation.model_validate(self.step_config)

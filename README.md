@@ -108,12 +108,16 @@ The following features are planned for future releases:
 - [x] Implement a common interface (Node) for input and output of each step
 - [x] Add SQLite support
 - [x] Add setter command for provider variable (openai, etc.)
-- [ ] Store each execution and step in DB
+- [x] Store each execution and step in DB
+- [ ] Add "split" -> "separator" step
+- [ ] Add "clean" -> "deduplicate" step
+- [ ] Add named step
+- [ ] Store each node in DB 
 - [ ] Allow pausing and resuming pipelines
 - [ ] Enable caching of each step's output
 - [ ] Trace each synthetic data with his historic
-- [ ] Design other step & methods
 - [ ] Implement custom scriptable step for developer
+- [ ] More steps...
 - [ ] Add Ollama, VLLM and transformers provider
 - [ ] Add a programmatic API
 - [ ] Use Ray for large workload
