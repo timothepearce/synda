@@ -27,6 +27,9 @@ class SeparatorParameters(BaseModel):
     separator: str = Field(
         default=".", description="The separator character(s)"
     )
+    keep_separator: bool = Field(
+        default=True, description="Should keep the separator character(s)"
+    )
 
 
 class SeparatorSplit(Step):
