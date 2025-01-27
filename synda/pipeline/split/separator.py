@@ -1,3 +1,5 @@
+from sqlmodel import Session
+
 from synda.pipeline.executor import Executor
 from synda.model.node import Node
 from synda.progress_manager import ProgressManager
@@ -5,8 +7,8 @@ from synda.model.step import Step
 
 
 class Separator(Executor):
-    def __init__(self, step_model: Step):
-        super().__init__(step_model)
+    def __init__(self, session: Session, step_model: Step):
+        super().__init__(session, step_model)
         self.progress = ProgressManager("SPLIT")
 
     def execute(self, input_data: list[Node]):

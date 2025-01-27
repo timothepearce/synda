@@ -111,7 +111,7 @@ The following features are planned for future releases:
 - [x] Store each execution and step in DB
 - [x] Add "split" -> "separator" step
 - [x] Add named step
-- [ ] Store each Node in DB
+- [x] Store each Node in DB
 - [ ] Allow injecting params from distant step into prompt
 - [ ] Allow pausing and resuming pipelines
 - [ ] Add "clean" -> "deduplicate" step

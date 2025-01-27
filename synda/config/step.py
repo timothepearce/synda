@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
+from sqlmodel import Session
 
 from synda.model.step import Step
 
@@ -16,5 +17,5 @@ class Step(BaseModel, ABC):
     parameters: dict
 
     @abstractmethod
-    def get_executor(self, step_model: Step) -> "Executor":
+    def get_executor(self, session: Session, step_model: Step) -> "Executor":
         pass

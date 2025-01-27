@@ -64,61 +64,54 @@ class Step(SQLModel, table=True):
         super().__init__(**data)
         self._define_step_name(**data)
 
-    def set_status(self, status: str) -> "Step":
-        with Session(engine) as session:
-            self.status = status
-            session.add(self)
-            session.commit()
-            session.refresh(self)
+    def set_status(self, session: Session, status: str) -> "Step":
+        self.status = status
+        session.add(self)
+        session.commit()
+        session.refresh(self)
 
-            return self
+        return self
 
-    def set_running(self, input_nodes: list[Node]) -> "Step":
-        with Session(engine) as session:
-            self.status = StepStatus.RUNNING
-            self.run_at = datetime.now()
+    def set_running(self, session: Session, input_nodes: list[Node]) -> "Step":
+        self.status = StepStatus.RUNNING
+        self.run_at = datetime.now()
 
-            for node in input_nodes:
-                if node.id is None:
-                    session.add(node)
-            session.flush()
+        for node in input_nodes:
+            if node.id is None:
+                session.add(node)
+        session.flush()
 
-            for node in input_nodes:
-                step_node = StepNode(
-                    step_id=self.id,
-                    node_id=node.id,
-                    relationship_type="input"
-                )
-                session.add(step_node)
+        for node in input_nodes:
+            step_node = StepNode(
+                step_id=self.id, node_id=node.id, relationship_type="input"
+            )
+            session.add(step_node)
 
-            session.add(self)
-            session.commit()
-            session.refresh(self)
+        session.add(self)
+        session.commit()
+        session.refresh(self)
 
-            return self
+        return self
 
-    def set_completed(self, output_nodes: list[Node]) -> "Step":
-        with Session(engine) as session:
-            self.status = StepStatus.COMPLETED
+    def set_completed(self, session: Session, output_nodes: list[Node]) -> "Step":
+        self.status = StepStatus.COMPLETED
 
-            for node in output_nodes:
-                if node.id is None:
-                    session.add(node)
-            session.flush()
+        for node in output_nodes:
+            if node.id is None:
+                session.add(node)
+        session.flush()
 
-            for node in output_nodes:
-                step_node = StepNode(
-                    step_id=self.id,
-                    node_id=node.id,
-                    relationship_type="output"
-                )
-                session.add(step_node)
+        for node in output_nodes:
+            step_node = StepNode(
+                step_id=self.id, node_id=node.id, relationship_type="output"
+            )
+            session.add(step_node)
 
-            session.add(self)
-            session.commit()
-            session.refresh(self)
+        session.add(self)
+        session.commit()
+        session.refresh(self)
 
-            return self
+        return self
 
     def get_step_config(self) -> "StepConfig":
         match self.step_type:
