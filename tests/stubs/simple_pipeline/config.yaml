@@ -8,6 +8,7 @@ input:
 pipeline:
   - type: split
     method: chunk
+    name: chunk_faq
     parameters:
       size: 500
       # overlap: 20

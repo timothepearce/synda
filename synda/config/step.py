@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 class Step(BaseModel, ABC):
     type: str
     method: str
+    name: str | None = None
     parameters: Any  # @todo unify with common type
 
     @abstractmethod

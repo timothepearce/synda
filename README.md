@@ -110,18 +110,20 @@ The following features are planned for future releases:
 - [x] Add setter command for provider variable (openai, etc.)
 - [x] Store each execution and step in DB
 - [x] Add "split" -> "separator" step
-- [ ] Store each node in DB
-- [ ] Add named step
+- [x] Add named step
+- [ ] Store each Node in DB
 - [ ] Allow injecting params from distant step into prompt
-- [ ] Add "clean" -> "deduplicate" step
 - [ ] Allow pausing and resuming pipelines
+- [ ] Add "clean" -> "deduplicate" step
+- [ ] Retry logic for LLM steps
+- [ ] Batch processing logic (via param.) for LLMs steps
 - [ ] Enable caching of each step's output
 - [ ] Trace each synthetic data with his historic
 - [ ] Implement custom scriptable step for developer
-- [ ] More steps...
 - [ ] Add Ollama, VLLM and transformers provider
 - [ ] Add a programmatic API
 - [ ] Use Ray for large workload
+- [ ] More steps...
 
 ## License
 
