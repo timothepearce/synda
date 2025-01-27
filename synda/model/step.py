@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING
 from sqlmodel import Column, SQLModel, Field, Relationship, JSON, Session
 
 from synda.database import engine
-from synda.pipeline.node import Node
+from synda.model.step_node import StepNode
+from synda.model.node import Node
+from synda.pipeline.node import Node as NodePipeline
 
 if TYPE_CHECKING:
     from synda.config.step import Step as StepConfig
@@ -28,11 +30,40 @@ class Step(SQLModel, table=True):
     step_name: str = Field(index=True)
     step_config: "StepConfig" = Field(default_factory=dict, sa_column=Column(JSON))
     status: StepStatus = Field(default=StepStatus.PENDING)
-    input_data: list[Node] | None = Field(default=None, sa_column=Column(JSON))
-    output_data: list[Node] = Field(default_factory=list, sa_column=Column(JSON))
+    input_data: list[NodePipeline] | None = Field(default=None, sa_column=Column(JSON))
+    output_data: list[NodePipeline] = Field(
+        default_factory=list, sa_column=Column(JSON)
+    )
     run_at: datetime | None = Field()
 
     run: "Run" = Relationship(back_populates="steps")
+
+    step_node_links: list["StepNode"] = Relationship(
+        back_populates="step",
+        sa_relationship_kwargs={"overlaps": "input_step,output_step"},
+    )
+
+    input_nodes: list[Node] = Relationship(
+        back_populates="input_step",
+        link_model=StepNode,
+        sa_relationship_kwargs={
+            "primaryjoin": "and_(Step.id == StepNode.step_id, StepNode.relationship_type == 'input')",
+            "secondaryjoin": "Node.id == StepNode.node_id",
+            "secondary": "step_node",
+            "overlaps": "output_step,step,step_node_links,node",
+        },
+    )
+
+    output_nodes: list[Node] = Relationship(
+        back_populates="output_step",
+        link_model=StepNode,
+        sa_relationship_kwargs={
+            "primaryjoin": "and_(Step.id == StepNode.step_id, StepNode.relationship_type == 'output')",
+            "secondaryjoin": "Node.id == StepNode.node_id",
+            "secondary": "step_node",
+            "overlaps": "input_nodes,input_step,step,step_node_links,node",
+        },
+    )
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -41,8 +72,8 @@ class Step(SQLModel, table=True):
     def update_execution(
         self,
         status: StepStatus,
-        input_data: list[Node] | None = None,
-        output_data: list[Node] | None = None,
+        input_data: list[NodePipeline] | None = None,
+        output_data: list[NodePipeline] | None = None,
     ) -> "Step":
         with Session(engine) as session:
             self.status = status
@@ -63,12 +94,15 @@ class Step(SQLModel, table=True):
         match self.step_type:
             case "split":
                 from synda.config.split import split_adapter
+
                 return split_adapter.validate_python(self.step_config)
             case "generation":
                 from synda.config.generation import Generation
+
                 return Generation.model_validate(self.step_config)
             case "ablation":
                 from synda.config.ablation import Ablation
+
                 return Ablation.model_validate(self.step_config)
             case _:
                 raise ValueError(f"Unknown step type: {self.step_type}")
