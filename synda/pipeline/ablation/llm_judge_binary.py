@@ -4,11 +4,10 @@ from typing import Literal
 from litellm import completion
 from pydantic import BaseModel
 
-from synda.config.generation import Generation
 from synda.model.provider import Provider
+from synda.model.step import Step
 from synda.pipeline.executor import Executor
 from synda.pipeline.node import Node
-from synda.pipeline.pipeline_context import PipelineContext
 from synda.progress_manager import ProgressManager
 from synda.utils import is_debug_enabled
 
@@ -21,20 +20,19 @@ class LLMJudgeCriterionBinaryAnswer(BaseModel):
 
 
 class LLMJudgeBinary(Executor):
-    def __init__(self, config: Generation):
-        super().__init__(config)
+    def __init__(self, step_model: Step):
+        super().__init__(step_model)
         self.progress = ProgressManager("ABLATION")
-        self.provider = Provider.get(config.parameters.provider)
+        self.provider = Provider.get(self.config.parameters.provider)
 
-    def execute(self, pipeline_context: PipelineContext):
-        nodes = pipeline_context.current_data
+    def execute(self, input_data: list[Node]):
         criteria = self.config.parameters.criteria
         result = []
 
         with self.progress.task(
-            "  Ablating...", len(nodes) * len(criteria)
+            "  Ablating...", len(input_data) * len(criteria)
         ) as advance_node:
-            for node in nodes:
+            for node in input_data:
                 judge_answers = []
 
                 for criterion in criteria:
@@ -44,7 +42,7 @@ class LLMJudgeBinary(Executor):
                     advance_node()
 
                 ablated = not self._check_consensus(judge_answers)
-                result_node = Node(value=node.value, ablated=ablated, from_node=node)
+                result_node = Node(parent_node_uuid=node.uuid, value=node.value, ablated=ablated)
                 result.append(result_node)
 
                 if is_debug_enabled():
@@ -54,13 +52,7 @@ class LLMJudgeBinary(Executor):
                     print(f"Judge answers: {judge_answers}")
                     print(f"Ablated: {result_node.is_ablated_text()}\n")
 
-        pipeline_context.add_step_result(
-            step_type=self.config.type,
-            step_method=self.config.method,
-            input_data=nodes,
-            output_data=result,
-            metadata=self.config.model_dump(),
-        )
+        return result
 
     def _call_llm_provider(self, prompt: str) -> LLMJudgeCriterionBinaryAnswer:
         response = completion(

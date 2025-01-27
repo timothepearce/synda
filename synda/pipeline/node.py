@@ -1,11 +1,14 @@
 from __future__ import annotations
-from pydantic import BaseModel
+from uuid import uuid4
+
+from pydantic import BaseModel, Field
 
 
 class Node(BaseModel):
+    uuid: str = Field(default_factory=lambda: str(uuid4()))
+    parent_node_uuid: str | None = None
+    ablated: bool = False
     value: str
-    ablated: bool = True
-    from_node: Node | None
 
     def is_ablated_text(self) -> str:
         return "yes" if self.ablated else "no"

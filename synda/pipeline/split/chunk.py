@@ -1,35 +1,27 @@
-from synda.config.split import Split
 from synda.pipeline.executor import Executor
 from synda.pipeline.node import Node
-from synda.pipeline.pipeline_context import PipelineContext
 from synda.progress_manager import ProgressManager
+from synda.model.step import Step
 
 
 class Chunk(Executor):
-    def __init__(self, config: Split):
-        super().__init__(config)
+    def __init__(self, step_model: Step):
+        super().__init__(step_model)
         self.progress = ProgressManager("SPLIT")
 
-    def execute(self, pipeline_context: PipelineContext):
-        input_nodes = pipeline_context.current_data
+    def execute(self, input_data: list[Node]):
         result = []
         size = self.config.parameters.size
 
-        with self.progress.task("  Chunking...", len(input_nodes)) as advance:
-            for node in input_nodes:
+        with self.progress.task("  Chunking...", len(input_data)) as advance:
+            for node in input_data:
                 text = node.value
 
                 while text:
                     chunk = text[:size]
                     text = text[size:]
-                    result.append(Node(value=chunk, from_node=node))
+                    result.append(Node(parent_node_uuid=node.uuid, value=chunk))
 
                 advance()
 
-        pipeline_context.add_step_result(
-            step_type=self.config.type,
-            step_method=self.config.method,
-            input_data=input_nodes,
-            output_data=result,
-            metadata=self.config.model_dump(),
-        )
+        return result

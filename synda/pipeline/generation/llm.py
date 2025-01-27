@@ -1,37 +1,29 @@
 from litellm import completion
 
-from synda.config.generation import Generation
 from synda.model.provider import Provider
+from synda.model.step import Step
 from synda.pipeline.executor import Executor
 from synda.pipeline.node import Node
-from synda.pipeline.pipeline_context import PipelineContext
 from synda.progress_manager import ProgressManager
 
 
 class LLM(Executor):
-    def __init__(self, config: Generation):
-        super().__init__(config)
+    def __init__(self, step_model: Step):
+        super().__init__(step_model)
         self.progress = ProgressManager("GENERATION")
-        self.provider = Provider.get(config.parameters.provider)
+        self.provider = Provider.get(self.config.parameters.provider)
 
-    def execute(self, pipeline_context: PipelineContext):
-        nodes = pipeline_context.current_data
+    def execute(self, input_data: list[Node]):
         result = []
 
-        with self.progress.task("Generating...", len(nodes)) as advance:
-            for node in nodes:
+        with self.progress.task("Generating...", len(input_data)) as advance:
+            for node in input_data:
                 prompt = self.config.parameters.template.format(chunk=node.value)
                 llm_answer = self._call_llm_provider(prompt)
-                result.append(Node(value=llm_answer, from_node=node))
+                result.append(Node(parent_node_uuid=node.uuid, value=llm_answer))
                 advance()
 
-        pipeline_context.add_step_result(
-            step_type=self.config.type,
-            step_method=self.config.method,
-            input_data=nodes,
-            output_data=result,
-            metadata=self.config.model_dump(),
-        )
+        return result
 
     def _call_llm_provider(self, prompt: str) -> str:
         response = completion(
