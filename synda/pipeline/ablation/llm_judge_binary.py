@@ -42,7 +42,9 @@ class LLMJudgeBinary(Executor):
                     advance_node()
 
                 ablated = not self._check_consensus(judge_answers)
-                result_node = Node(parent_node_uuid=node.uuid, value=node.value, ablated=ablated)
+                result_node = Node(
+                    parent_node_uuid=node.uuid, value=node.value, ablated=ablated
+                )
                 result.append(result_node)
 
                 if is_debug_enabled():

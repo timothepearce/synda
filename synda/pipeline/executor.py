@@ -11,9 +11,13 @@ class Executor:
 
     def execute_and_update_step(self, input_data: list[Node]) -> list[Node]:
         try:
-            self.step_model.update_execution(status=StepStatus.RUNNING, input_data=input_data)
+            self.step_model.update_execution(
+                status=StepStatus.RUNNING, input_data=input_data
+            )
             output_data = self.execute(input_data)
-            self.step_model.update_execution(status=StepStatus.COMPLETED, output_data=output_data)
+            self.step_model.update_execution(
+                status=StepStatus.COMPLETED, output_data=output_data
+            )
 
             return output_data
         except Exception as e:

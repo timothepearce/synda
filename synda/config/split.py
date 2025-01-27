@@ -20,13 +20,12 @@ class ChunkSplit(Step):
 
     def get_executor(self, step_model: StepModel) -> Executor:
         from synda.pipeline.split import Chunk
+
         return Chunk(step_model)
 
 
 class SeparatorParameters(BaseModel):
-    separator: str = Field(
-        default=".", description="The separator character(s)"
-    )
+    separator: str = Field(default=".", description="The separator character(s)")
     keep_separator: bool = Field(
         default=True, description="Should keep the separator character(s)"
     )
@@ -39,12 +38,10 @@ class SeparatorSplit(Step):
 
     def get_executor(self, step_model: StepModel) -> Executor:
         from synda.pipeline.split import Separator
+
         return Separator(step_model)
 
 
-Split = Annotated[
-    Union[ChunkSplit, SeparatorSplit],
-    Field(discriminator='method')
-]
+Split = Annotated[Union[ChunkSplit, SeparatorSplit], Field(discriminator="method")]
 
 split_adapter = TypeAdapter(Split)

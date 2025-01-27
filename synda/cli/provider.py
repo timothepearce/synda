@@ -64,7 +64,7 @@ def provider_command(
     action_handlers = {
         ProviderAction.ADD: lambda: add_provider(model_provider, api_key),
         ProviderAction.DELETE: lambda: delete_provider(model_provider),
-        ProviderAction.UPDATE: lambda: update_provider(model_provider, api_key)
+        ProviderAction.UPDATE: lambda: update_provider(model_provider, api_key),
     }
 
     action_handlers[action]()

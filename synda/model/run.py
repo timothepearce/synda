@@ -42,18 +42,18 @@ class Run(SQLModel, table=True):
                     step_name=pipeline_step.name,
                     step_config=pipeline_step.model_dump(),
                     status=StepStatus.PENDING,
-                    run_at=datetime.now()
+                    run_at=datetime.now(),
                 )
                 for position, pipeline_step in enumerate(config.pipeline, start=1)
             ]
 
             session.add_all(steps)
             session.commit()
-            session.refresh(run, ['steps'])
+            session.refresh(run, ["steps"])
 
         return run
 
-    def update(self,  **kwargs) -> "Run":
+    def update(self, **kwargs) -> "Run":
         for field, value in kwargs.items():
             setattr(self, field, value)
 

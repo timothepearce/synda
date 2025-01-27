@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
@@ -13,7 +13,7 @@ class Step(BaseModel, ABC):
     type: str
     method: str
     name: str | None = None
-    parameters: Any  # @todo unify with common type
+    parameters: dict
 
     @abstractmethod
     def get_executor(self, step_model: Step) -> "Executor":

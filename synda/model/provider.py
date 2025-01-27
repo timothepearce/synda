@@ -35,6 +35,4 @@ class Provider(SQLModel, table=True):
     @staticmethod
     def get(name: str) -> "Provider":
         with Session(engine) as session:
-            return session.exec(
-                select(Provider).where(Provider.name == name)
-            ).one()
+            return session.exec(select(Provider).where(Provider.name == name)).one()

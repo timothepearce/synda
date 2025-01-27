@@ -26,19 +26,10 @@ class Step(SQLModel, table=True):
     step_type: str = Field(index=True)
     step_method: str = Field()
     step_name: str = Field(index=True)
-    step_config: "StepConfig" = Field(
-        default_factory=dict,
-        sa_column=Column(JSON)
-    )
+    step_config: "StepConfig" = Field(default_factory=dict, sa_column=Column(JSON))
     status: StepStatus = Field(default=StepStatus.PENDING)
-    input_data: list[Node] | None = Field(
-        default=None,
-        sa_column=Column(JSON)
-    )
-    output_data: list[Node] = Field(
-        default_factory=list,
-        sa_column=Column(JSON)
-    )
+    input_data: list[Node] | None = Field(default=None, sa_column=Column(JSON))
+    output_data: list[Node] = Field(default_factory=list, sa_column=Column(JSON))
     run_at: datetime | None = Field()
 
     run: "Run" = Relationship(back_populates="steps")
@@ -47,7 +38,12 @@ class Step(SQLModel, table=True):
         super().__init__(**data)
         self._define_step_name(**data)
 
-    def update_execution(self, status: StepStatus, input_data: list[Node] | None = None, output_data: list[Node] | None = None) -> "Step":
+    def update_execution(
+        self,
+        status: StepStatus,
+        input_data: list[Node] | None = None,
+        output_data: list[Node] | None = None,
+    ) -> "Step":
         with Session(engine) as session:
             self.status = status
 
@@ -64,19 +60,21 @@ class Step(SQLModel, table=True):
             return self
 
     def get_step_config(self) -> "StepConfig":
-        # @todo reimplement with a dynamic class resolution
-        if self.step_type == "split":
-            from synda.config.split import split_adapter
-            return split_adapter.validate_python(self.step_config)
-        elif self.step_type == "generation":
-            from synda.config.generation import Generation
-            return Generation.model_validate(self.step_config)
-        elif self.step_type == "ablation":
-            from synda.config.ablation import Ablation
-            return Ablation.model_validate(self.step_config)
+        match self.step_type:
+            case "split":
+                from synda.config.split import split_adapter
+                return split_adapter.validate_python(self.step_config)
+            case "generation":
+                from synda.config.generation import Generation
+                return Generation.model_validate(self.step_config)
+            case "ablation":
+                from synda.config.ablation import Ablation
+                return Ablation.model_validate(self.step_config)
+            case _:
+                raise ValueError(f"Unknown step type: {self.step_type}")
 
     def _define_step_name(self, **data):
-        if 'step_name' in data and data['step_name']:
-            self.step_name = data['step_name']
+        if "step_name" in data and data["step_name"]:
+            self.step_name = data["step_name"]
         else:
             self.step_name = f"{self.step_type}_{self.step_method}"

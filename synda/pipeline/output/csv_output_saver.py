@@ -12,9 +12,7 @@ class CSVOutputSaver(OutputSaver):
 
     def save(self, input_data: list[Node]) -> None:
         synthetic_data = [node.value for node in input_data]
-        ablated_data = [
-            node.is_ablated_text() for node in input_data
-        ]
+        ablated_data = [node.is_ablated_text() for node in input_data]
 
         df = pd.DataFrame(
             {
