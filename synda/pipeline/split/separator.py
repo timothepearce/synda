@@ -14,7 +14,7 @@ class Separator(Executor):
         separator = self.config.parameters.separator
         keep_separator = self.config.parameters.keep_separator
 
-        with self.progress.task("  Separating...", len(input_data)) as advance:
+        with self.progress.task("Separating...", len(input_data)) as advance:
             for node in input_data:
                 text = node.value
                 start = 0

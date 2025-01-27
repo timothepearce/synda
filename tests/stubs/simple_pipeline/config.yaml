@@ -11,12 +11,12 @@ pipeline:
     parameters:
       size: 500
       # overlap: 20
-
-  - type: split
-    method: separator
-    parameters:
-      separator: .
-      keep_separator: true # or false
+#
+#  - type: split
+#    method: separator
+#    parameters:
+#      separator: .
+#      keep_separator: true # or false
 
   - type: generation
     method: llm

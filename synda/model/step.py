@@ -58,14 +58,8 @@ class Step(SQLModel, table=True):
 
             return self
 
-    def update_input_data(self):
-        pass
-
-    def update_output_data(self):
-        pass
-
     def get_step_config(self) -> "StepConfig":
-        # @todo reimplement with dynamic concrete class resolution and instanciation
+        # @todo reimplement with a dynamic class resolution
         if self.step_name == "split":
             from synda.config.split import split_adapter
             return split_adapter.validate_python(self.step_config)
