@@ -3,7 +3,7 @@ from litellm import completion
 from synda.model.provider import Provider
 from synda.model.step import Step
 from synda.pipeline.executor import Executor
-from synda.pipeline.node import Node
+from synda.model.node import Node
 from synda.progress_manager import ProgressManager
 
 
@@ -20,7 +20,7 @@ class LLM(Executor):
             for node in input_data:
                 prompt = self.config.parameters.template.format(chunk=node.value)
                 llm_answer = self._call_llm_provider(prompt)
-                result.append(Node(parent_node_uuid=node.uuid, value=llm_answer))
+                result.append(Node(parent_node_id=node.id, value=llm_answer))
                 advance()
 
         return result

@@ -1,5 +1,5 @@
 from synda.pipeline.executor import Executor
-from synda.pipeline.node import Node
+from synda.model.node import Node
 from synda.progress_manager import ProgressManager
 from synda.model.step import Step
 

@@ -1,5 +1,5 @@
 from synda.pipeline.executor import Executor
-from synda.pipeline.node import Node
+from synda.model.node import Node
 from synda.progress_manager import ProgressManager
 from synda.model.step import Step
 
@@ -20,7 +20,7 @@ class Chunk(Executor):
                 while text:
                     chunk = text[:size]
                     text = text[size:]
-                    result.append(Node(parent_node_uuid=node.uuid, value=chunk))
+                    result.append(Node(parent_node_id=node.id, value=chunk))
 
                 advance()
 

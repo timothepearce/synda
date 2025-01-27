@@ -7,7 +7,6 @@ from sqlmodel import Column, SQLModel, Field, Relationship, JSON, Session
 from synda.database import engine
 from synda.model.step_node import StepNode
 from synda.model.node import Node
-from synda.pipeline.node import Node as NodePipeline
 
 if TYPE_CHECKING:
     from synda.config.step import Step as StepConfig
@@ -30,10 +29,6 @@ class Step(SQLModel, table=True):
     step_name: str = Field(index=True)
     step_config: "StepConfig" = Field(default_factory=dict, sa_column=Column(JSON))
     status: StepStatus = Field(default=StepStatus.PENDING)
-    input_data: list[NodePipeline] | None = Field(default=None, sa_column=Column(JSON))
-    output_data: list[NodePipeline] = Field(
-        default_factory=list, sa_column=Column(JSON)
-    )
     run_at: datetime | None = Field()
 
     run: "Run" = Relationship(back_populates="steps")
@@ -69,20 +64,55 @@ class Step(SQLModel, table=True):
         super().__init__(**data)
         self._define_step_name(**data)
 
-    def update_execution(
-        self,
-        status: StepStatus,
-        input_data: list[NodePipeline] | None = None,
-        output_data: list[NodePipeline] | None = None,
-    ) -> "Step":
+    def set_status(self, status: str) -> "Step":
         with Session(engine) as session:
             self.status = status
+            session.add(self)
+            session.commit()
+            session.refresh(self)
 
-            if input_data is not None:
-                self.input_data = [node.model_dump() for node in input_data]
+            return self
 
-            if output_data is not None:
-                self.output_data = [node.model_dump() for node in output_data]
+    def set_running(self, input_nodes: list[Node]) -> "Step":
+        with Session(engine) as session:
+            self.status = StepStatus.RUNNING
+            self.run_at = datetime.now()
+
+            for node in input_nodes:
+                if node.id is None:
+                    session.add(node)
+            session.flush()
+
+            for node in input_nodes:
+                step_node = StepNode(
+                    step_id=self.id,
+                    node_id=node.id,
+                    relationship_type="input"
+                )
+                session.add(step_node)
+
+            session.add(self)
+            session.commit()
+            session.refresh(self)
+
+            return self
+
+    def set_completed(self, output_nodes: list[Node]) -> "Step":
+        with Session(engine) as session:
+            self.status = StepStatus.COMPLETED
+
+            for node in output_nodes:
+                if node.id is None:
+                    session.add(node)
+            session.flush()
+
+            for node in output_nodes:
+                step_node = StepNode(
+                    step_id=self.id,
+                    node_id=node.id,
+                    relationship_type="output"
+                )
+                session.add(step_node)
 
             session.add(self)
             session.commit()

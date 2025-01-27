@@ -2,7 +2,7 @@ import pandas as pd
 
 from synda.pipeline.input import InputLoader
 from synda.config.input import Input
-from synda.pipeline.node import Node
+from synda.model.node import Node
 
 
 class CSVInputLoader(InputLoader):
@@ -17,5 +17,7 @@ class CSVInputLoader(InputLoader):
 
         for value in target_list.values:
             result.append(Node(value=value))
+
+        self.persist_nodes(result)
 
         return result

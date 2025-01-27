@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from synda.model.provider import Provider
 from synda.model.step import Step
 from synda.pipeline.executor import Executor
-from synda.pipeline.node import Node
+from synda.model.node import Node
 from synda.progress_manager import ProgressManager
 from synda.utils import is_debug_enabled
 
@@ -43,7 +43,7 @@ class LLMJudgeBinary(Executor):
 
                 ablated = not self._check_consensus(judge_answers)
                 result_node = Node(
-                    parent_node_uuid=node.uuid, value=node.value, ablated=ablated
+                    parent_node_id=node.id, value=node.value, ablated=ablated
                 )
                 result.append(result_node)
 

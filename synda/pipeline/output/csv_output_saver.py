@@ -1,7 +1,7 @@
 import pandas as pd
 
 from synda.config.output import Output
-from synda.pipeline.node import Node
+from synda.model.node import Node
 from synda.pipeline.output.output_saver import OutputSaver
 
 

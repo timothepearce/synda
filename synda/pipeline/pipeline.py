@@ -17,16 +17,16 @@ class Pipeline:
 
     def execute(self):
         try:
-            input_data = self.input_loader.load()
+            input_nodes = self.input_loader.load()
 
             for step in self.run.steps:
                 if is_debug_enabled():
                     print(step)
 
                 executor = step.get_step_config().get_executor(step)
-                input_data = executor.execute_and_update_step(input_data)
+                input_nodes = executor.execute_and_update_step(input_nodes)
 
-            self.output_saver.save(input_data)
+            self.output_saver.save(input_nodes)
 
             self.run.update(status=RunStatus.FINISHED)
         except Exception as e:
