@@ -1,6 +1,6 @@
 from abc import abstractmethod
 
-from synda.pipeline.node import Node
+from synda.model.node import Node
 
 
 class OutputSaver:

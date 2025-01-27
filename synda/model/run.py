@@ -26,41 +26,39 @@ class Run(SQLModel, table=True):
     steps: list[Step] = Relationship(back_populates="run")
 
     @staticmethod
-    def create_with_steps(config: "Config") -> "Run":
+    def create_with_steps(session: Session, config: "Config") -> "Run":
         run = Run(config=config.model_dump())
 
-        with Session(engine) as session:
-            session.add(run)
-            session.flush()
+        session.add(run)
+        session.flush()
 
-            steps = [
-                Step(
-                    run_id=run.id,
-                    position=position,
-                    step_name=pipeline_step.type,
-                    step_method=pipeline_step.method,
-                    step_config=pipeline_step.model_dump(),
-                    status=StepStatus.PENDING,
-                    run_at=datetime.now()
-                )
-                for position, pipeline_step in enumerate(config.pipeline, start=1)
-            ]
+        steps = [
+            Step(
+                run_id=run.id,
+                position=position,
+                step_type=pipeline_step.type,
+                step_method=pipeline_step.method,
+                step_name=pipeline_step.name,
+                step_config=pipeline_step.model_dump(),
+                status=StepStatus.PENDING,
+                run_at=datetime.now(),
+            )
+            for position, pipeline_step in enumerate(config.pipeline, start=1)
+        ]
 
-            session.add_all(steps)
-            session.commit()
-            session.refresh(run, ['steps'])
+        session.add_all(steps)
+        session.commit()
+        session.refresh(run, ["steps"])
 
         return run
 
-    def update(self,  **kwargs) -> "Run":
-        for field, value in kwargs.items():
-            setattr(self, field, value)
+    def update(self, session: Session, status: RunStatus) -> "Run":
+        self.status = status
 
-        with Session(engine) as session:
-            session.add(self)
-            session.commit()
-            session.refresh(self)
-            return self
+        session.add(self)
+        session.commit()
+        session.refresh(self)
+        return self
 
     def get_config(self) -> "Config":
         return Config.model_validate(self.config)

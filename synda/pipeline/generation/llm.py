@@ -1,15 +1,16 @@
 from litellm import completion
+from sqlmodel import Session
 
 from synda.model.provider import Provider
 from synda.model.step import Step
 from synda.pipeline.executor import Executor
-from synda.pipeline.node import Node
+from synda.model.node import Node
 from synda.progress_manager import ProgressManager
 
 
 class LLM(Executor):
-    def __init__(self, step_model: Step):
-        super().__init__(step_model)
+    def __init__(self, session: Session, step_model: Step):
+        super().__init__(session, step_model)
         self.progress = ProgressManager("GENERATION")
         self.provider = Provider.get(self.config.parameters.provider)
 
@@ -20,7 +21,7 @@ class LLM(Executor):
             for node in input_data:
                 prompt = self.config.parameters.template.format(chunk=node.value)
                 llm_answer = self._call_llm_provider(prompt)
-                result.append(Node(parent_node_uuid=node.uuid, value=llm_answer))
+                result.append(Node(parent_node_id=node.id, value=llm_answer))
                 advance()
 
         return result
