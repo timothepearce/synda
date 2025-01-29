@@ -22,7 +22,7 @@ class Executor:
 
             return output_nodes
         except Exception as e:
-            self.step_model.set_status(StepStatus.ERRORED)
+            self.step_model.set_status(self.session, StepStatus.ERRORED)
             raise e
 
     @abstractmethod

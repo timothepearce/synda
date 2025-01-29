@@ -27,13 +27,13 @@ class Separator(Executor):
                     chunk = text[start:chunk_end]
 
                     if chunk:
-                        result.append(Node(parent_node_uuid=node.uuid, value=chunk))
+                        result.append(Node(parent_node_id=node.id, value=chunk))
 
                     start = pos + len(separator)
                     pos = text.find(separator, start)
 
                 if start < len(text):
-                    result.append(Node(parent_node_uuid=node.uuid, value=text[start:]))
+                    result.append(Node(parent_node_id=node.id, value=text[start:]))
 
                 advance()
 
