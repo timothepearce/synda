@@ -1,1 +1,1 @@
-from .remove_duplicates import RemoveDuplicates
+from .deduplicates import Deduplicate

@@ -7,7 +7,7 @@ from synda.config.step import Step
 from synda.model.step import Step as StepModel
 from synda.pipeline.executor import Executor
 
-class RemoveDuplicatesParameters(BaseModel):
+class DeduplicatesParameters(BaseModel):
     strategy: Literal["exact", "fuzzy"] = Field(
         default="exact", description="Strategy for removing duplicates"
     )
@@ -17,17 +17,17 @@ class RemoveDuplicatesParameters(BaseModel):
     keep: Literal["first", "last"] = Field(default="first", description="Keep the first or last duplicate")
 
 
-class RemoveDuplicates(Step):
+class Deduplicate(Step):
     type: str = "clean"
-    method: Literal["remove_duplicates"]
-    parameters: RemoveDuplicatesParameters
+    method: Literal["deduplicate"]
+    parameters: DeduplicatesParameters
 
     def get_executor(self, session: Session, step_model: StepModel) -> Executor:
-        if self.method == "remove_duplicates":
-            from synda.pipeline.clean import RemoveDuplicates
+        if self.method == "deduplicate":
+            from synda.pipeline.clean import Deduplicate
 
-            return RemoveDuplicates(session, step_model)
+            return Deduplicate(session, step_model)
 
-RemoveDuplicates = Annotated[RemoveDuplicates, Field(discriminator="method")]
+Deduplicate = Annotated[Deduplicate, Field(discriminator="method")]
 
-remove_duplicates_adapter = TypeAdapter(RemoveDuplicates)
+deduplicate_adapter = TypeAdapter(Deduplicate)
