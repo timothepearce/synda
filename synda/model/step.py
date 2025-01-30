@@ -127,6 +127,10 @@ class Step(SQLModel, table=True):
                 from synda.config.ablation import Ablation
 
                 return Ablation.model_validate(self.step_config)
+            case "clean":
+                from synda.config.clean import RemoveDuplicates
+
+                return RemoveDuplicates.model_validate(self.step_config)
             case _:
                 raise ValueError(f"Unknown step type: {self.step_type}")
 

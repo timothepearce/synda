@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "synda"
-version = "0.3.2"
+version = "0.3.3"
 description = "A CLI for generating synthetic data"
 authors = ["Timothé Pearce <timothe.pearce@gmail.com>"]
 license = "Apache 2.0"
@@ -20,6 +20,7 @@ litellm = "1.55.12"
 rich = "^13.9.4"
 sqlmodel = "^0.0.22"
 typer = {extras = ["all"], version = "^0.15.1"}
+scikit-learn = "^1.6.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.10.0"
