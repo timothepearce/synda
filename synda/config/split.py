@@ -20,7 +20,9 @@ class ChunkSplit(Step):
     method: Literal["chunk"]
     parameters: ChunkParameters
 
-    def get_executor(self, session: Session, run: Run, step_model: StepModel) -> Executor:
+    def get_executor(
+        self, session: Session, run: Run, step_model: StepModel
+    ) -> Executor:
         from synda.pipeline.split import Chunk
 
         return Chunk(session, run, step_model)
@@ -38,7 +40,9 @@ class SeparatorSplit(Step):
     method: Literal["separator"]
     parameters: SeparatorParameters
 
-    def get_executor(self, session: Session, run: Run, step_model: StepModel) -> Executor:
+    def get_executor(
+        self, session: Session, run: Run, step_model: StepModel
+    ) -> Executor:
         from synda.pipeline.split import Separator
 
         return Separator(session, run, step_model)

@@ -36,9 +36,9 @@ class Run(SQLModel, table=True):
             Step(
                 run_id=run.id,
                 position=position,
-                step_type=pipeline_step.type,
-                step_method=pipeline_step.method,
-                step_name=pipeline_step.name,
+                type=pipeline_step.type,
+                method=pipeline_step.method,
+                name=pipeline_step.name,
                 step_config=pipeline_step.model_dump(),
                 status=StepStatus.PENDING,
                 run_at=datetime.now(),

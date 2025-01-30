@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from sqlmodel import Column, SQLModel, Field, Relationship, JSON, Session
 
-from synda.database import engine
 from synda.model.step_node import StepNode
 from synda.model.node import Node
 
@@ -24,9 +23,9 @@ class Step(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     run_id: int = Field(foreign_key="run.id")
     position: int = Field()
-    step_type: str = Field(index=True)
-    step_method: str = Field()
-    step_name: str = Field(index=True)
+    type: str = Field(index=True)
+    method: str = Field()
+    name: str = Field(index=True)
     step_config: "StepConfig" = Field(default_factory=dict, sa_column=Column(JSON))
     status: StepStatus = Field(default=StepStatus.PENDING)
     run_at: datetime | None = Field()
@@ -110,7 +109,7 @@ class Step(SQLModel, table=True):
         return self
 
     def get_step_config(self) -> "StepConfig":
-        match self.step_type:
+        match self.type:
             case "split":
                 from synda.config.split import split_adapter
 
@@ -124,4 +123,4 @@ class Step(SQLModel, table=True):
 
                 return Ablation.model_validate(self.step_config)
             case _:
-                raise ValueError(f"Unknown step type: {self.step_type}")
+                raise ValueError(f"Unknown step type: {self.type}")

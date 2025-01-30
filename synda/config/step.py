@@ -17,7 +17,7 @@ class Step(BaseModel, ABC):
     name: str | None = None
     parameters: dict
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def set_default_name(self) -> str:
         if self.name is None:
             self.name = f"{self.type}_{self.method}"

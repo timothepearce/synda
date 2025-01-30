@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship, Column, JSON
 
 from synda.model.step_node import StepNode
 
@@ -12,6 +12,7 @@ class Node(SQLModel, table=True):
     parent_node_id: int | None = None
     ablated: bool = False
     value: str
+    ancestors: dict = Field(default_factory=dict, sa_column=Column(JSON))
 
     step_node_links: list["StepNode"] = Relationship(back_populates="node")
 
