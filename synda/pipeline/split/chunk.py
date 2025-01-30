@@ -1,5 +1,6 @@
 from sqlmodel import Session
 
+from synda.model.run import Run
 from synda.pipeline.executor import Executor
 from synda.model.node import Node
 from synda.progress_manager import ProgressManager
@@ -7,8 +8,8 @@ from synda.model.step import Step
 
 
 class Chunk(Executor):
-    def __init__(self, session: Session, step_model: Step):
-        super().__init__(session, step_model)
+    def __init__(self, session: Session, run: Run, step_model: Step):
+        super().__init__(session, run, step_model)
         self.progress = ProgressManager("SPLIT")
 
     def execute(self, input_data: list[Node]):

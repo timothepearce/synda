@@ -60,10 +60,6 @@ class Step(SQLModel, table=True):
         },
     )
 
-    def __init__(self, **data):
-        super().__init__(**data)
-        self._define_step_name(**data)
-
     def set_status(self, session: Session, status: str) -> "Step":
         self.status = status
         session.add(self)
@@ -129,9 +125,3 @@ class Step(SQLModel, table=True):
                 return Ablation.model_validate(self.step_config)
             case _:
                 raise ValueError(f"Unknown step type: {self.step_type}")
-
-    def _define_step_name(self, **data):
-        if "step_name" in data and data["step_name"]:
-            self.step_name = data["step_name"]
-        else:
-            self.step_name = f"{self.step_type}_{self.step_method}"

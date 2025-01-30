@@ -2,6 +2,7 @@ from litellm import completion
 from sqlmodel import Session
 
 from synda.model.provider import Provider
+from synda.model.run import Run
 from synda.model.step import Step
 from synda.pipeline.executor import Executor
 from synda.model.node import Node
@@ -9,8 +10,8 @@ from synda.progress_manager import ProgressManager
 
 
 class LLM(Executor):
-    def __init__(self, session: Session, step_model: Step):
-        super().__init__(session, step_model)
+    def __init__(self, session: Session, run: Run, step_model: Step):
+        super().__init__(session, run, step_model)
         self.progress = ProgressManager("GENERATION")
         self.provider = Provider.get(self.config.parameters.provider)
 
