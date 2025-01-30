@@ -38,6 +38,13 @@ pipeline:
     parameters:
       size: 500
 
+  - type: clean
+    method: deduplicate
+    parameters:
+      strategy: fuzzy
+      similarity_threshold: 0.9
+      keep: first 
+
   - type: generation
     method: llm
     parameters:
