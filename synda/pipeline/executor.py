@@ -38,9 +38,7 @@ class Executor:
             if parent_id is None:
                 continue
 
-            parent_node = next(
-                (node for node in input_nodes if node.id == parent_id), None
-            )
+            parent_node = next(node for node in input_nodes if node.id == parent_id)
             output_node.ancestors = parent_node.ancestors | {step_name: parent_node.id}
 
     @abstractmethod

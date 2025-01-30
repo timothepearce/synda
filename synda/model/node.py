@@ -1,5 +1,5 @@
-from typing import TYPE_CHECKING
-from sqlmodel import SQLModel, Field, Relationship, Column, JSON
+from typing import TYPE_CHECKING, Union
+from sqlmodel import SQLModel, Field, Relationship, Column, JSON, Session, select
 
 from synda.model.step_node import StepNode
 
@@ -37,6 +37,19 @@ class Node(SQLModel, table=True):
             "overlaps": "input_step,node,step_node_links,step",
         },
     )
+
+    @classmethod
+    def get(cls, session: Session, node_ids: Union[int, list[int]]) -> Union["Node", list["Node"]]:
+        if isinstance(node_ids, int):
+            node_ids = [node_ids]
+            single_result = True
+        else:
+            single_result = False
+
+        query = select(cls).where(cls.id.in_(node_ids))
+        results = session.exec(query).all()
+
+        return results[0] if single_result and results else results
 
     def is_ablated_text(self) -> str:
         return "yes" if self.ablated else "no"
