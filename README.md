@@ -112,9 +112,9 @@ The following features are planned for future releases:
 - [x] Add "split" -> "separator" step
 - [x] Add named step
 - [x] Store each Node in DB
+- [x] Add "clean" -> "deduplicate" step
 - [ ] Allow injecting params from distant step into prompt
 - [ ] Allow pausing and resuming pipelines
-- [x] Add "clean" -> "deduplicate" step
 - [ ] Retry logic for LLM steps
 - [ ] Batch processing logic (via param.) for LLMs steps
 - [ ] Enable caching of each step's output
