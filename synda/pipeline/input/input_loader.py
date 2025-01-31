@@ -14,7 +14,11 @@ class InputLoader:
     def persist_nodes(session: Session, nodes: list[Node]) -> list[Node]:
         for node in nodes:
             session.add(node)
+        session.flush()
 
+        for node in nodes:
+            node.ancestors = {'source': node.id}
+            session.add(node)
         session.commit()
 
         for node in nodes:

@@ -29,6 +29,8 @@ class LLM(Executor):
 
         return result
 
+    # @todo move to template parser
+    # @todo make usable for each step with LLM
     def _build_prompts(self, input_data: list[Node]) -> list[str]:
         template = self.config.parameters.template
         variables = TemplateParser.extract_variables(template)
@@ -49,11 +51,11 @@ class LLM(Executor):
                 variable_value[variable_name] = parent_node.value
 
             prompts.append(template.format(**variable_value))
-            print("VARIABLES: ", variable_value)
-            print("\n\n\n")
 
         return prompts
 
+    # @todo move to a distinct class
+    # @todo use in all steps with a LLM call
     def _call_llm_provider(self, prompt: str) -> str:
         response = completion(
             model=f"{self.provider.name}/{self.config.parameters.model}",

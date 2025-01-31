@@ -18,7 +18,7 @@ pipeline:
     name: sentence_chunk_faq
     parameters:
       separator: .
-      keep_separator: false
+      keep_separator: true
 
   - type: generation
     method: llm
@@ -43,8 +43,8 @@ pipeline:
       model: gpt-4o-mini
       consensus: all # any, majority
       criteria:
-        - Is the text written in english?
-        # - Is the text consistent?
+        - Is the question written in english?
+        - Is the question consistent?
 
 output:
   type: csv
