@@ -8,7 +8,7 @@ from synda.model.node import Node
 from synda.progress_manager import ProgressManager
 from synda.model.step import Step
 
-class Deduplicate(Executor):    
+class DeduplicateTFIDF(Executor):    
     def __init__(self, session: Session, step_model: Step):
         super().__init__(session, step_model)
         self.progress = ProgressManager("CLEAN")

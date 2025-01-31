@@ -7,7 +7,7 @@ from synda.config.step import Step
 from synda.model.step import Step as StepModel
 from synda.pipeline.executor import Executor
 
-class DeduplicatesParameters(BaseModel):
+class DeduplicateParametersTFIDF(BaseModel):
     strategy: Literal["exact", "fuzzy"] = Field(
         default="exact", description="Strategy for removing duplicates"
     )
@@ -17,17 +17,17 @@ class DeduplicatesParameters(BaseModel):
     keep: Literal["first", "last"] = Field(default="first", description="Keep the first or last duplicate")
 
 
-class Deduplicate(Step):
+class DeduplicateTFIDF(Step):
     type: str = "clean"
-    method: Literal["deduplicate"]
-    parameters: DeduplicatesParameters
+    method: Literal["deduplicate-td-idf"]
+    parameters: DeduplicateParametersTFIDF
 
     def get_executor(self, session: Session, step_model: StepModel) -> Executor:
-        if self.method == "deduplicate":
-            from synda.pipeline.clean import Deduplicate
+        if self.method == "deduplicate-td-idf":
+            from synda.pipeline.clean import DeduplicateTFIDF
 
-            return Deduplicate(session, step_model)
+            return DeduplicateTFIDF(session, step_model)
 
-Deduplicate = Annotated[Deduplicate, Field(discriminator="method")]
+Deduplicate = Annotated[DeduplicateTFIDF, Field(discriminator="method")]
 
 deduplicate_adapter = TypeAdapter(Deduplicate)
