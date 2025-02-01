@@ -24,7 +24,9 @@ class LLM(Executor):
 
         with self.progress.task("Generating...", len(input_data)) as advance:
             for node, prompt in zip(input_data, prompts):
-                llm_answer = LLMProvider.call(self.provider.name, self.model, self.provider.api_key, prompt)
+                llm_answer = LLMProvider.call(
+                    self.provider.name, self.model, self.provider.api_key, prompt
+                )
                 result.append(Node(parent_node_id=node.id, value=llm_answer))
                 advance()
 

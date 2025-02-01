@@ -1,7 +1,6 @@
 import json
 from typing import Literal
 
-from litellm import completion
 from pydantic import BaseModel
 from sqlmodel import Session
 
@@ -12,6 +11,7 @@ from synda.pipeline.executor import Executor
 from synda.model.node import Node
 from synda.progress_manager import ProgressManager
 from synda.utils.env import is_debug_enabled
+from synda.utils.llm_provider import LLMProvider
 
 
 class LLMJudgeCriterionBinaryAnswer(BaseModel):
@@ -26,6 +26,7 @@ class LLMJudgeBinary(Executor):
         super().__init__(session, run, step_model)
         self.progress = ProgressManager("ABLATION")
         self.provider = Provider.get(self.config.parameters.provider)
+        self.model = self.config.parameters.model
 
     def execute(self, input_data: list[Node]):
         criteria = self.config.parameters.criteria
@@ -39,8 +40,15 @@ class LLMJudgeBinary(Executor):
 
                 for criterion in criteria:
                     prompt = self._build_binary_judge_prompt(node.value, criterion)
-                    response = self._call_llm_provider(prompt)
-                    judge_answers.append(response)
+                    judge_answer = LLMProvider.call(
+                        self.provider.name,
+                        self.model,
+                        self.provider.api_key,
+                        prompt,
+                        LLMJudgeCriterionBinaryAnswer,
+                    )
+                    judge_answer = LLMJudgeCriterionBinaryAnswer(**json.loads(judge_answer))
+                    judge_answers.append(judge_answer)
                     advance_node()
 
                 ablated = not self._check_consensus(judge_answers)
@@ -57,16 +65,6 @@ class LLMJudgeBinary(Executor):
                     print(f"Ablated: {result_node.is_ablated_text()}\n")
 
         return result
-
-    def _call_llm_provider(self, prompt: str) -> LLMJudgeCriterionBinaryAnswer:
-        response = completion(
-            model=f"{self.provider.name}/{self.config.parameters.model}",
-            messages=[{"content": prompt, "role": "user"}],
-            api_key=self.provider.api_key,
-            response_format=LLMJudgeCriterionBinaryAnswer,
-        )
-        answer = json.loads(response["choices"][0]["message"]["content"])
-        return LLMJudgeCriterionBinaryAnswer(**answer)
 
     def _check_consensus(
         self, judge_answers: list[LLMJudgeCriterionBinaryAnswer]
@@ -90,6 +88,8 @@ class LLMJudgeBinary(Executor):
             case _:
                 raise ValueError(f"Unknown consensus: {consensus}")
 
+
+    # @todo use prompt builder for criterion
     @staticmethod
     def _build_binary_judge_prompt(candidate: str, criterion: str) -> str:
         return (
