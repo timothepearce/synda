@@ -1,1 +1,1 @@
-from .deduplicates_td_idf import DeduplicateTFIDF
+from .deduplicates_tf_idf import DeduplicateTFIDF
