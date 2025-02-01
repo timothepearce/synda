@@ -5,18 +5,16 @@ from sqlmodel import Session
 from synda.model.node import Node
 
 
-class TemplateParser:
+class PromptBuilder:
     @staticmethod
-    def extract_variables(template: str) -> list[str]:
+    def extract_template_variables(template: str) -> list[str]:
         pattern = r"{([^}]+)}"
         matches = re.finditer(pattern, template)
         return [match.group(1) for match in matches]
 
     @staticmethod
-    def build_prompts(
-        session: Session, template: str, input_data: list[Node]
-    ) -> list[str]:
-        variables = TemplateParser.extract_variables(template)
+    def build(session: Session, template: str, input_data: list[Node]) -> list[str]:
+        variables = PromptBuilder.extract_template_variables(template)
         prompts = []
 
         if len(variables) == 0:

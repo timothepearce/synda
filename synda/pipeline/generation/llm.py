@@ -6,7 +6,7 @@ from synda.model.run import Run
 from synda.model.step import Step
 from synda.pipeline.executor import Executor
 from synda.model.node import Node
-from synda.utils.template_parser import TemplateParser
+from synda.utils.prompt_builder import PromptBuilder
 from synda.progress_manager import ProgressManager
 
 
@@ -18,7 +18,7 @@ class LLM(Executor):
 
     def execute(self, input_data: list[Node]):
         template = self.config.parameters.template
-        prompts = TemplateParser.build_prompts(self.session, template, input_data)
+        prompts = PromptBuilder.build(self.session, template, input_data)
         result = []
 
         with self.progress.task("Generating...", len(input_data)) as advance:
