@@ -88,7 +88,9 @@ class Step(SQLModel, table=True):
 
         return self
 
-    def set_completed(self, session: Session, input_nodes: list[Node], output_nodes: list[Node]) -> "Step":
+    def set_completed(
+        self, session: Session, input_nodes: list[Node], output_nodes: list[Node]
+    ) -> "Step":
         self.status = StepStatus.COMPLETED
 
         self._create_nodes_with_ancestors(session, input_nodes, output_nodes)
@@ -100,7 +102,9 @@ class Step(SQLModel, table=True):
 
         return self
 
-    def _create_nodes_with_ancestors(self, session: Session, input_nodes: list[Node], output_nodes: list[Node]):
+    def _create_nodes_with_ancestors(
+        self, session: Session, input_nodes: list[Node], output_nodes: list[Node]
+    ):
         for node in output_nodes:
             if node.id is None:
                 session.add(node)

@@ -11,7 +11,7 @@ from synda.model.step import Step
 from synda.pipeline.executor import Executor
 from synda.model.node import Node
 from synda.progress_manager import ProgressManager
-from synda.utils import is_debug_enabled
+from synda.utils.env import is_debug_enabled
 
 
 class LLMJudgeCriterionBinaryAnswer(BaseModel):

@@ -39,7 +39,9 @@ class Node(SQLModel, table=True):
     )
 
     @classmethod
-    def get(cls, session: Session, node_ids: Union[int, list[int]]) -> Union["Node", list["Node"]]:
+    def get(
+        cls, session: Session, node_ids: Union[int, list[int]]
+    ) -> Union["Node", list["Node"]]:
         if isinstance(node_ids, int):
             node_ids = [node_ids]
             single_result = True

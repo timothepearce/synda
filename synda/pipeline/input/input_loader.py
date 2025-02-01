@@ -17,7 +17,7 @@ class InputLoader:
         session.flush()
 
         for node in nodes:
-            node.ancestors = {'source': node.id}
+            node.ancestors = {"source": node.id}
             session.add(node)
         session.commit()
 

@@ -3,7 +3,7 @@ from sqlmodel import Session
 
 from synda.database import engine
 from synda.model.run import Run, RunStatus
-from synda.utils import is_debug_enabled
+from synda.utils.env import is_debug_enabled
 
 if TYPE_CHECKING:
     from synda.config import Config
