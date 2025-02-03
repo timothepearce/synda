@@ -120,16 +120,16 @@ The following features are planned for future releases:
 - [x] Add named step
 - [x] Store each Node in DB
 - [x] Add "clean" -> "deduplicate" step
-- [ ] Allow injecting params from distant step into prompt
-- [ ] Allow pausing and resuming pipelines
+- [x] Allow injecting params from distant step into prompt
 - [ ] Retry logic for LLM steps
-- [ ] Batch processing logic (via param.) for LLMs steps
-- [ ] Enable caching of each step's output
+- [ ] Allow pausing and resuming pipelines
 - [ ] Trace each synthetic data with his historic
+- [ ] Enable caching of each step's output
 - [ ] Implement custom scriptable step for developer
 - [ ] Add Ollama, VLLM and transformers provider
-- [ ] Add a programmatic API
 - [ ] Use Ray for large workload
+- [ ] Batch processing logic (via param.) for LLMs steps
+- [ ] Add a programmatic API
 - [ ] More steps...
 
 ## License
