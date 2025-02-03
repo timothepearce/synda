@@ -16,6 +16,7 @@ class ExecutorColor(Enum):
     SPLIT = "red"
     GENERATION = "green"
     ABLATION = "cyan"
+    CLEAN = "blue"
 
 
 class ProgressManager:

@@ -36,6 +36,13 @@ pipeline:
 
         question:
 
+  - type: clean
+    method: deduplicate
+    parameters:
+      strategy: fuzzy
+      similarity_threshold: 0.9
+      keep: first 
+
   - type: ablation
     method: llm-judge-binary
     parameters:
