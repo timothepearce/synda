@@ -10,7 +10,7 @@ pipeline:
     method: chunk
     name: chunk_faq
     parameters:
-      size: 500
+      size: 1500
       # overlap: 20
 
   - type: split

@@ -47,7 +47,9 @@ class LLMJudgeBinary(Executor):
                         prompt,
                         LLMJudgeCriterionBinaryAnswer,
                     )
-                    judge_answer = LLMJudgeCriterionBinaryAnswer(**json.loads(judge_answer))
+                    judge_answer = LLMJudgeCriterionBinaryAnswer(
+                        **json.loads(judge_answer)
+                    )
                     judge_answers.append(judge_answer)
                     advance_node()
 
@@ -87,7 +89,6 @@ class LLMJudgeBinary(Executor):
                 return positive_answers > total_answers / 2
             case _:
                 raise ValueError(f"Unknown consensus: {consensus}")
-
 
     # @todo use prompt builder for criterion
     @staticmethod

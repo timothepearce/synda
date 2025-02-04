@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field, TypeAdapter
 from sqlmodel import Session
 
 from synda.config.step import Step
+from synda.model.run import Run
 from synda.model.step import Step as StepModel
 from synda.pipeline.executor import Executor
 
@@ -25,11 +26,13 @@ class DeduplicateTFIDF(Step):
     method: Literal["deduplicate-tf-idf"]
     parameters: DeduplicateParametersTFIDF
 
-    def get_executor(self, session: Session, step_model: StepModel) -> Executor:
+    def get_executor(
+        self, session: Session, run: Run, step_model: StepModel
+    ) -> Executor:
         if self.method == "deduplicate-tf-idf":
             from synda.pipeline.clean import DeduplicateTFIDF
 
-            return DeduplicateTFIDF(session, step_model)
+            return DeduplicateTFIDF(session, run, step_model)
 
 
 Deduplicate = Annotated[DeduplicateTFIDF, Field(discriminator="method")]

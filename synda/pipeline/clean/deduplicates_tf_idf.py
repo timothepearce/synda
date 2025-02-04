@@ -3,6 +3,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sqlmodel import Session
 
+from synda.model.run import Run
 from synda.pipeline.executor import Executor
 from synda.model.node import Node
 from synda.progress_manager import ProgressManager
@@ -10,8 +11,8 @@ from synda.model.step import Step
 
 
 class DeduplicateTFIDF(Executor):
-    def __init__(self, session: Session, step_model: Step):
-        super().__init__(session, step_model)
+    def __init__(self, session: Session, run: Run, step_model: Step):
+        super().__init__(session, run, step_model)
         self.progress = ProgressManager("CLEAN")
 
     def execute(self, input_data: List[Node]) -> List[Node]:
@@ -19,8 +20,7 @@ class DeduplicateTFIDF(Executor):
         similarity_threshold = self.config.parameters.similarity_threshold
         keep = self.config.parameters.keep
 
-        with self.progress.task("Removing duplicates...", len(input_data)) as advance:
-            # Convert nodes to list of values
+        with self.progress.task("  Cleaning...", len(input_data)) as advance:
             data_list = [str(node.value) for node in input_data]
 
             if strategy == "exact":
@@ -30,12 +30,11 @@ class DeduplicateTFIDF(Executor):
                     data_list, similarity_threshold, keep, advance
                 )
 
-            advance()
-        # Convert back to Node objects
         return [Node(value=item) for item in result_list]
 
+    @staticmethod
     def _remove_exact_duplicates(
-        self, data: List[str], keep: str, advance
+        data: List[str], keep: str, advance
     ) -> List[str]:
         seen_values = set()
         result = []
