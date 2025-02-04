@@ -10,7 +10,7 @@ class XLSOutputProperties(OutputProperties):
     sheet_name: str = Field(default="Sheet1")
 
     @model_validator(mode="after")
-    def validate_properties(self) -> "CSVOutputProperties":
+    def validate_properties(self) -> "XLSOutputProperties":
         self._validate_path()
         return self
 

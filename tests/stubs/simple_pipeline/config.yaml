@@ -1,8 +1,9 @@
 input:
-  type: xls
+  type: csv
   properties:
-    path: tests/stubs/simple_pipeline/source.xlsx
+    path: tests/stubs/simple_pipeline/source.csv
     target_column: content
+    separator: "\t"
 
 pipeline:
   - type: split
@@ -40,7 +41,7 @@ pipeline:
     parameters:
       strategy: fuzzy
       similarity_threshold: 0.9
-      keep: first 
+      keep: first
 
   - type: ablation
     method: llm-judge-binary
@@ -53,7 +54,7 @@ pipeline:
         - Is the question consistent?
 
 output:
-  type: xls
+  type: csv
   properties:
-    path: tests/stubs/simple_pipeline/output.xlsx
-    sheet_name: "synthetic_data"
+    path: tests/stubs/simple_pipeline/output.csv
+    separator: "\t"

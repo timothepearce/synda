@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "synda"
-version = "0.4.0"
+version = "0.4.1"
 description = "A CLI for generating synthetic data"
 authors = ["Timothé Pearce <timothe.pearce@gmail.com>"]
 license = "Apache 2.0"
