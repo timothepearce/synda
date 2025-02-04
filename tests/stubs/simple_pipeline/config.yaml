@@ -11,13 +11,14 @@ pipeline:
     name: chunk_faq
     parameters:
       size: 500
-      
-  - type: clean
-    method: deduplicate
+      # overlap: 20
+
+  - type: split
+    method: separator
+    name: sentence_chunk_faq
     parameters:
-      strategy: fuzzy
-      similarity_threshold: 0.9
-      keep: first 
+      separator: .
+      keep_separator: true
 
   - type: generation
     method: llm
@@ -25,14 +26,22 @@ pipeline:
       provider: openai
       model: gpt-4o-mini
       template: |
-        Ask a question regarding the content.
-        content: {chunk}
+        Ask a question regarding the sentence about the content.
+        content: {chunk_faq}
+        sentence: {sentence_chunk_faq}
 
         Instructions :
         1. Use english only
         2. Keep it short
 
         question:
+
+  - type: clean
+    method: deduplicate
+    parameters:
+      strategy: fuzzy
+      similarity_threshold: 0.9
+      keep: first
 
   - type: ablation
     method: llm-judge-binary
@@ -41,8 +50,8 @@ pipeline:
       model: gpt-4o-mini
       consensus: all # any, majority
       criteria:
-        - Is the text written in english?
-        # - Is the text consistent?
+        - Is the question written in english?
+        - Is the question consistent?
 
 output:
   type: csv

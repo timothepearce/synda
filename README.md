@@ -28,22 +28,24 @@ pip install synda
 input:
   type: csv
   properties:
-    path: source.csv  # relative path to your source file
+    path: tests/stubs/simple_pipeline/source.csv
     target_column: content
     separator: "\t"
 
 pipeline:
   - type: split
     method: chunk
+    name: chunk_faq
     parameters:
       size: 500
+      # overlap: 20
 
-  - type: clean
-    method: deduplicate
+  - type: split
+    method: separator
+    name: sentence_chunk_faq
     parameters:
-      strategy: fuzzy
-      similarity_threshold: 0.9
-      keep: first 
+      separator: .
+      keep_separator: true
 
   - type: generation
     method: llm
@@ -51,8 +53,9 @@ pipeline:
       provider: openai
       model: gpt-4o-mini
       template: |
-        Ask a question regarding the content.
-        content: {chunk}
+        Ask a question regarding the sentence about the content.
+        content: {chunk_faq}
+        sentence: {sentence_chunk_faq}
 
         Instructions :
         1. Use english only
@@ -60,20 +63,27 @@ pipeline:
 
         question:
 
+  - type: clean
+    method: deduplicate-tf-idf
+    parameters:
+      strategy: fuzzy
+      similarity_threshold: 0.9
+      keep: first 
+
   - type: ablation
     method: llm-judge-binary
     parameters:
       provider: openai
       model: gpt-4o-mini
-      consensus: all
+      consensus: all # any, majority
       criteria:
-        - Is the text written in english?
-        - Is the text consistent?
+        - Is the question written in english?
+        - Is the question consistent?
 
 output:
   type: csv
   properties:
-    path: output.csv
+    path: tests/stubs/simple_pipeline/output.csv
     separator: "\t"
 ```
 
@@ -99,17 +109,20 @@ The Nebula pipeline consists of three main parts:
 
 ### Available Pipeline Steps
 
-Currently, Synda supports three pipeline steps (as shown in the example above):
+Currently, Synda supports four pipeline steps (as shown in the example above):
 
 - **split**: Breaks down data into chunks of defined size (`method: chunk` or `method: split`)
 - **generation**: Generates content using LLM models (`method: llm`)
+- **clean**: Delete the duplicated data (`method: deduplicate-tf-idf`)
 - **ablation**: Filters data based on defined criteria (`method: llm-judge-binary`)
 
 More steps will be added in future releases.
 
 ## Roadmap
 
-The following features are planned for future releases:
+The following features are planned for future releases.
+
+### Core
 
 - [x] Implement a Proof of Concept
 - [x] Implement a common interface (Node) for input and output of each step
@@ -122,6 +135,8 @@ The following features are planned for future releases:
 - [x] Add "clean" -> "deduplicate" step
 - [x] Allow injecting params from distant step into prompt
 - [ ] Retry logic for LLM steps
+- [ ] Move input into pipeline (step type: 'load')
+- [ ] Move output into pipeline (step type: 'export')
 - [ ] Allow pausing and resuming pipelines
 - [ ] Trace each synthetic data with his historic
 - [ ] Enable caching of each step's output
@@ -130,7 +145,24 @@ The following features are planned for future releases:
 - [ ] Use Ray for large workload
 - [ ] Batch processing logic (via param.) for LLMs steps
 - [ ] Add a programmatic API
-- [ ] More steps...
+
+### Steps
+- [ ] loader: Hugging Face datasets
+- [ ] loader: .xls format
+- [ ] chunk: Semantic chunks
+- [ ] clean: embedding deduplication
+- [ ] ablation: LLMs as a juries
+- [ ] masking: NER (GliNER)
+- [ ] masking: Regexp
+- [ ] masking: PII
+
+### Ideas
+- [ ] translations (SeamlessM4T)
+- [ ] speech-to-text
+- [ ] text-to-speech
+- [ ] metadata extraction
+- [ ] tSNE / PCA
+- [ ] custom steps?
 
 ## License
 
