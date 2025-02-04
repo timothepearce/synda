@@ -22,7 +22,6 @@ sqlmodel = "^0.0.22"
 typer = {extras = ["all"], version = "^0.15.1"}
 scikit-learn = "^1.6.1"
 openpyxl = "^3.1.5"
-ollama = "^0.4.7"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.10.0"

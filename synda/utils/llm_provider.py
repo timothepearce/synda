@@ -9,8 +9,8 @@ class LLMProvider:
         model: str,
         api_key: str,
         prompt: str,
-        url: str | None = None,
         response_format: BaseModel | None = None,
+        url: str | None = None,
     ) -> str:
         response = completion(
             model=f"{provider}/{model}",

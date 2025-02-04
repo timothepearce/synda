@@ -36,7 +36,7 @@ def delete_provider(name: str) -> None:
 
 
 def update_provider(name: str, api_key: str, api_url: str) -> None:
-    if not api_key or not api_url:
+    if api_key is None and api_url is None:
         typer.secho("API key or API url is required for updating a provider", fg=typer.colors.RED)
         raise typer.Exit(1)
 
