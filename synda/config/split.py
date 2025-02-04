@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field, TypeAdapter
 from sqlmodel import Session
 
 from synda.config.step import Step
+from synda.model.run import Run
 from synda.model.step import Step as StepModel
 from synda.pipeline.executor import Executor
 
@@ -19,10 +20,12 @@ class ChunkSplit(Step):
     method: Literal["chunk"]
     parameters: ChunkParameters
 
-    def get_executor(self, session: Session, step_model: StepModel) -> Executor:
+    def get_executor(
+        self, session: Session, run: Run, step_model: StepModel
+    ) -> Executor:
         from synda.pipeline.split import Chunk
 
-        return Chunk(session, step_model)
+        return Chunk(session, run, step_model)
 
 
 class SeparatorParameters(BaseModel):
@@ -37,10 +40,12 @@ class SeparatorSplit(Step):
     method: Literal["separator"]
     parameters: SeparatorParameters
 
-    def get_executor(self, session: Session, step_model: StepModel) -> Executor:
+    def get_executor(
+        self, session: Session, run: Run, step_model: StepModel
+    ) -> Executor:
         from synda.pipeline.split import Separator
 
-        return Separator(session, step_model)
+        return Separator(session, run, step_model)
 
 
 Split = Annotated[Union[ChunkSplit, SeparatorSplit], Field(discriminator="method")]

@@ -37,11 +37,11 @@ pipeline:
         question:
 
   - type: clean
-    method: deduplicate
+    method: deduplicate-tf-idf
     parameters:
       strategy: fuzzy
       similarity_threshold: 0.9
-      keep: first
+      keep: first 
 
   - type: ablation
     method: llm-judge-binary

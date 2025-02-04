@@ -3,7 +3,7 @@ from sqlmodel import Session
 
 from synda.database import engine
 from synda.model.run import Run, RunStatus
-from synda.utils import is_debug_enabled
+from synda.utils.env import is_debug_enabled
 
 if TYPE_CHECKING:
     from synda.config import Config
@@ -26,7 +26,9 @@ class Pipeline:
                 if is_debug_enabled():
                     print(step)
 
-                executor = step.get_step_config().get_executor(self.session, step)
+                executor = step.get_step_config().get_executor(
+                    self.session, self.run, step
+                )
                 input_nodes = executor.execute_and_update_step(input_nodes)
 
             self.output_saver.save(input_nodes)

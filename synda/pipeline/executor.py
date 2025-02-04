@@ -2,13 +2,15 @@ from abc import abstractmethod
 
 from sqlmodel import Session
 
+from synda.model.run import Run
 from synda.model.step import Step, StepStatus
 from synda.model.node import Node
 
 
 class Executor:
-    def __init__(self, session: Session, step_model: Step):
+    def __init__(self, session: Session, run: Run, step_model: Step):
         self.session = session
+        self.run = run
         self.step_model = step_model
         self.config = step_model.get_step_config()
 
@@ -18,7 +20,7 @@ class Executor:
 
             output_nodes = self.execute(input_nodes)
 
-            self.step_model.set_completed(self.session, output_nodes)
+            self.step_model.set_completed(self.session, input_nodes, output_nodes)
 
             return output_nodes
         except Exception as e:

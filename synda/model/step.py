@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from sqlmodel import Column, SQLModel, Field, Relationship, JSON, Session
 
-from synda.database import engine
 from synda.model.step_node import StepNode
 from synda.model.node import Node
 
@@ -24,9 +23,9 @@ class Step(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     run_id: int = Field(foreign_key="run.id")
     position: int = Field()
-    step_type: str = Field(index=True)
-    step_method: str = Field()
-    step_name: str = Field(index=True)
+    type: str = Field(index=True)
+    method: str = Field()
+    name: str = Field(index=True)
     step_config: "StepConfig" = Field(default_factory=dict, sa_column=Column(JSON))
     status: StepStatus = Field(default=StepStatus.PENDING)
     run_at: datetime | None = Field()
@@ -60,10 +59,6 @@ class Step(SQLModel, table=True):
         },
     )
 
-    def __init__(self, **data):
-        super().__init__(**data)
-        self._define_step_name(**data)
-
     def set_status(self, session: Session, status: str) -> "Step":
         self.status = status
         session.add(self)
@@ -93,19 +88,13 @@ class Step(SQLModel, table=True):
 
         return self
 
-    def set_completed(self, session: Session, output_nodes: list[Node]) -> "Step":
+    def set_completed(
+        self, session: Session, input_nodes: list[Node], output_nodes: list[Node]
+    ) -> "Step":
         self.status = StepStatus.COMPLETED
 
-        for node in output_nodes:
-            if node.id is None:
-                session.add(node)
-        session.flush()
-
-        for node in output_nodes:
-            step_node = StepNode(
-                step_id=self.id, node_id=node.id, relationship_type="output"
-            )
-            session.add(step_node)
+        self._create_nodes_with_ancestors(session, input_nodes, output_nodes)
+        self._map_nodes_to_step(session, output_nodes)
 
         session.add(self)
         session.commit()
@@ -113,8 +102,33 @@ class Step(SQLModel, table=True):
 
         return self
 
+    def _create_nodes_with_ancestors(
+        self, session: Session, input_nodes: list[Node], output_nodes: list[Node]
+    ):
+        for node in output_nodes:
+            if node.id is None:
+                session.add(node)
+        session.flush()
+
+        for node in output_nodes:
+            parent_id = node.parent_node_id
+
+            if parent_id is None:
+                continue
+
+            parent_node = next(node for node in input_nodes if node.id == parent_id)
+            node.ancestors = parent_node.ancestors | {self.name: node.id}
+            session.add(node)
+
+    def _map_nodes_to_step(self, session: Session, output_nodes: list[Node]):
+        for node in output_nodes:
+            step_node = StepNode(
+                step_id=self.id, node_id=node.id, relationship_type="output"
+            )
+            session.add(step_node)
+
     def get_step_config(self) -> "StepConfig":
-        match self.step_type:
+        match self.type:
             case "split":
                 from synda.config.split import split_adapter
 
@@ -132,10 +146,4 @@ class Step(SQLModel, table=True):
 
                 return Deduplicate.model_validate(self.step_config)
             case _:
-                raise ValueError(f"Unknown step type: {self.step_type}")
-
-    def _define_step_name(self, **data):
-        if "step_name" in data and data["step_name"]:
-            self.step_name = data["step_name"]
-        else:
-            self.step_name = f"{self.step_type}_{self.step_method}"
+                raise ValueError(f"Unknown step type: {self.type}")
