@@ -9,12 +9,14 @@ class LLMProvider:
         model: str,
         api_key: str,
         prompt: str,
+        url: str | None = None,
         response_format: BaseModel | None = None,
     ) -> str:
         response = completion(
             model=f"{provider}/{model}",
             messages=[{"content": prompt, "role": "user"}],
             api_key=api_key,
+            api_base=url,
             response_format=response_format,
         )
 

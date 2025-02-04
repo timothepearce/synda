@@ -45,7 +45,8 @@ class LLMJudgeBinary(Executor):
                         self.model,
                         self.provider.api_key,
                         prompt,
-                        LLMJudgeCriterionBinaryAnswer,
+                        url=self.provider.api_url,
+                        response_format=LLMJudgeCriterionBinaryAnswer,
                     )
                     judge_answer = LLMJudgeCriterionBinaryAnswer(
                         **json.loads(judge_answer)

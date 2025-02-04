@@ -12,9 +12,9 @@ class ProviderAction(str, Enum):
     UPDATE = "update"
 
 
-def add_provider(name: str, api_key: str | None) -> None:
+def add_provider(name: str, api_key: str | None, api_url: str | None) -> None:
     try:
-        Provider.create(name=name, api_key=api_key)
+        Provider.create(name=name, api_key=api_key, api_url=api_url)
         typer.secho(f"Successfully added provider: {name}", fg=typer.colors.GREEN)
     except IntegrityError as e:
         typer.secho(f"Provider {name} already exists", fg=typer.colors.YELLOW)
@@ -35,14 +35,17 @@ def delete_provider(name: str) -> None:
         raise typer.Exit(1)
 
 
-def update_provider(name: str, api_key: str) -> None:
-    if not api_key:
-        typer.secho("API key is required for updating a provider", fg=typer.colors.RED)
+def update_provider(name: str, api_key: str, api_url: str) -> None:
+    if not api_key or not api_url:
+        typer.secho("API key or API url is required for updating a provider", fg=typer.colors.RED)
         raise typer.Exit(1)
 
     try:
         provider = Provider.get(name)
-        provider.update(api_key=api_key)
+        if api_key is not None:
+            provider.update(api_key=api_key)
+        if api_url is not None:
+            provider.update(api_url=api_url)
         typer.secho(f"Successfully updated provider: {name}", fg=typer.colors.GREEN)
     except NoResultFound as e:
         typer.secho(f"Provider {name} not found", fg=typer.colors.RED)
@@ -60,11 +63,17 @@ def provider_command(
         "-k",
         help="API key for model provider",
     ),
+    api_url: str = typer.Option(
+        None,
+        "--api-url",
+        "-k",
+        help="API url to call for model provider"
+    )
 ):
     action_handlers = {
-        ProviderAction.ADD: lambda: add_provider(model_provider, api_key),
+        ProviderAction.ADD: lambda: add_provider(model_provider, api_key, api_url),
         ProviderAction.DELETE: lambda: delete_provider(model_provider),
-        ProviderAction.UPDATE: lambda: update_provider(model_provider, api_key),
+        ProviderAction.UPDATE: lambda: update_provider(model_provider, api_key, api_url),
     }
 
     action_handlers[action]()
