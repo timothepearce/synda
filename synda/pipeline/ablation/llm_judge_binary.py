@@ -15,7 +15,7 @@ from synda.utils.llm_provider import LLMProvider
 
 
 class LLMJudgeCriterionBinaryAnswer(BaseModel):
-    answer: Literal["YES", "NO", "YES.", "NO."]
+    answer: Literal["YES", "NO"]
 
     def is_positive_answer(self) -> bool:
         return self.answer == "YES"
@@ -99,7 +99,7 @@ class LLMJudgeBinary(Executor):
         return (
             f"You are an expert judge tasked with evaluating synthetic text data.\n"
             f"You are evaluating synthetic data against a given criterion.\n"
-            f"You must answer by 'YES' or 'NO'\n"
+            f"You must answer by 'YES' or 'NO', No punctuation, no extra text.\n"
             f"Output YES when the criterion is fulfilled.\n"
             f"Output NO when the criterion is NOT fulfilled.\n"
             f"------\n"
