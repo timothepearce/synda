@@ -23,8 +23,8 @@ pipeline:
   - type: generation
     method: llm
     parameters:
-      provider: openai
-      model: gpt-4o-mini
+      provider: ollama
+      model: llama3.2
       template: |
         Ask a question regarding the sentence about the content.
         content: {chunk_faq}
@@ -41,13 +41,13 @@ pipeline:
     parameters:
       strategy: fuzzy
       similarity_threshold: 0.9
-      keep: first 
+      keep: first
 
   - type: ablation
     method: llm-judge-binary
     parameters:
-      provider: openai
-      model: gpt-4o-mini
+      provider: ollama
+      model: llama3.2
       consensus: all # any, majority
       criteria:
         - Is the question written in english?

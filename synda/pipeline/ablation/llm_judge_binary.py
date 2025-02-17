@@ -37,7 +37,6 @@ class LLMJudgeBinary(Executor):
         ) as advance_node:
             for node in input_data:
                 judge_answers = []
-
                 for criterion in criteria:
                     prompt = self._build_binary_judge_prompt(node.value, criterion)
                     judge_answer = LLMProvider.call(
@@ -46,10 +45,14 @@ class LLMJudgeBinary(Executor):
                         self.provider.api_key,
                         prompt,
                         LLMJudgeCriterionBinaryAnswer,
+                        url=self.provider.api_url
                     )
-                    judge_answer = LLMJudgeCriterionBinaryAnswer(
-                        **json.loads(judge_answer)
-                    )
+                    if isinstance(judge_answer, str):
+                        judge_answer = LLMJudgeCriterionBinaryAnswer(answer=judge_answer)
+                    else:
+                        judge_answer = LLMJudgeCriterionBinaryAnswer(
+                            **json.loads(judge_answer)
+                        )
                     judge_answers.append(judge_answer)
                     advance_node()
 
@@ -59,12 +62,12 @@ class LLMJudgeBinary(Executor):
                 )
                 result.append(result_node)
 
-                if is_debug_enabled():
-                    print(f"Answer: {node.value}")
-                    print(f"Criteria: {str(criteria)}")
-                    print(f"Consensus: {self.config.parameters.consensus}")
-                    print(f"Judge answers: {judge_answers}")
-                    print(f"Ablated: {result_node.is_ablated_text()}\n")
+            if is_debug_enabled():
+                print(f"Answer: {node.value}")
+                print(f"Criteria: {str(criteria)}")
+                print(f"Consensus: {self.config.parameters.consensus}")
+                print(f"Judge answers: {judge_answers}")
+                print(f"Ablated: {result_node.is_ablated_text()}\n")
 
         return result
 
@@ -96,18 +99,18 @@ class LLMJudgeBinary(Executor):
         return (
             f"You are an expert judge tasked with evaluating synthetic text data.\n"
             f"You are evaluating synthetic data against a given criterion.\n"
-            f"You must answer by YES or NO.\n"
+            f"You must answer by 'YES' or 'NO', No punctuation, no extra text.\n"
             f"Output YES when the criterion is fulfilled.\n"
             f"Output NO when the criterion is NOT fulfilled.\n"
             f"------\n"
-            f"criterion: Is the candidate written in english?\n"
-            f"candidate: Great Britain is a bit pretentious to call itself “Great”.\n"
-            "{answer: YES}\n"
-            f"------\n"
-            f"criterion: Does the text contain more than 10 words?\n"
-            f"candidate: The cat sleeps.\n"
-            "{answer: NO}\n"
-            f"------\n"
+            # f"criterion: Is the candidate written in english?\n"
+            # f"candidate: Great Britain is a bit pretentious to call itself “Great”.\n"
+            # "{answer: YES}\n"
+            # f"------\n"
+            # f"criterion: Does the text contain more than 10 words?\n"
+            # f"candidate: The cat sleeps.\n"
+            # "{answer: NO}\n"
+            # f"------\n"
             f"criterion: {criterion}\n"
             f"candidate: {candidate}\n"
         )
