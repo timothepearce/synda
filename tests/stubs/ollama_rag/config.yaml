@@ -1,8 +1,9 @@
 input:
-  type: csv  # xls
+  type: csv
   properties:
-    path: tests/stubs/simple_pipeline/source.csv  #source.xlsx
+    path: tests/stubs/ollama_rag/source.csv
     target_column: content
+    separator: "\t"
 
 pipeline:
   - type: split
@@ -10,7 +11,6 @@ pipeline:
     name: chunk_faq
     parameters:
       size: 1500
-      # overlap: 20
 
   - type: split
     method: separator
@@ -22,8 +22,8 @@ pipeline:
   - type: generation
     method: llm
     parameters:
-      provider: openai    # ollama
-      model: gpt-4o-mini  # llama3.2
+      provider: ollama
+      model: mistral-small:22b
       template: |
         Ask a question regarding the sentence about the content.
         content: {chunk_faq}
@@ -45,15 +45,15 @@ pipeline:
   - type: ablation
     method: llm-judge-binary
     parameters:
-      provider: openai    # ollama
-      model: gpt-4o-mini  # llama3.2
-      consensus: all # any, majority
+      provider: ollama
+      model: mistral-small:22b
+      consensus: all
       criteria:
         - Is the question written in english?
         - Is the question consistent?
 
 output:
-  type: csv  # xls
+  type: csv
   properties:
-    path: tests/stubs/simple_pipeline/output.csv
-    separator: "\t"  # xls -> no separator
+    path: tests/stubs/ollama_rag/output.csv
+    separator: "\t"
