@@ -1,9 +1,8 @@
 input:
-  type: csv
+  type: csv  # xls
   properties:
-    path: tests/stubs/simple_pipeline/source.csv
+    path: tests/stubs/simple_pipeline/source.csv  #source.xlsx
     target_column: content
-    separator: "\t"
 
 pipeline:
   - type: split
@@ -23,8 +22,8 @@ pipeline:
   - type: generation
     method: llm
     parameters:
-      provider: ollama
-      model: llama3.2
+      provider: openai    # ollama
+      model: gpt-4o-mini  # llama3.2
       template: |
         Ask a question regarding the sentence about the content.
         content: {chunk_faq}
@@ -46,15 +45,15 @@ pipeline:
   - type: ablation
     method: llm-judge-binary
     parameters:
-      provider: ollama
-      model: llama3.2
+      provider: openai    # ollama
+      model: gpt-4o-mini  # llama3.2
       consensus: all # any, majority
       criteria:
         - Is the question written in english?
         - Is the question consistent?
 
 output:
-  type: csv
+  type: csv  # xls
   properties:
     path: tests/stubs/simple_pipeline/output.csv
-    separator: "\t"
+    separator: "\t"  # xls -> no separator
