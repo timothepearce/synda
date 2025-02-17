@@ -1,7 +1,7 @@
 input:
-  type: csv  # xls
+  type: xls
   properties:
-    path: tests/stubs/simple_pipeline/source.csv  #source.xlsx
+    path: tests/stubs/simple_pipeline/source.xlsx
     target_column: content
 
 pipeline:
@@ -53,7 +53,6 @@ pipeline:
         - Is the question consistent?
 
 output:
-  type: csv  # xls
+  type: xls
   properties:
-    path: tests/stubs/simple_pipeline/output.csv
-    separator: "\t"  # xls -> no separator
+    path: tests/stubs/simple_pipeline/output.xlsx

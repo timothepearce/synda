@@ -1,0 +1,58 @@
+input:
+  type: csv
+  properties:
+    path: tests/stubs/simple_pipeline/source.csv
+    target_column: content
+
+pipeline:
+  - type: split
+    method: chunk
+    name: chunk_faq
+    parameters:
+      size: 1500
+
+  - type: split
+    method: separator
+    name: sentence_chunk_faq
+    parameters:
+      separator: .
+      keep_separator: true
+
+  - type: generation
+    method: llm
+    parameters:
+      provider: openai
+      model: gpt-4o-mini
+      template: |
+        Ask a question regarding the sentence about the content.
+        content: {chunk_faq}
+        sentence: {sentence_chunk_faq}
+
+        Instructions :
+        1. Use english only
+        2. Keep it short
+
+        question:
+
+  - type: clean
+    method: deduplicate-tf-idf
+    parameters:
+      strategy: fuzzy
+      similarity_threshold: 0.9
+      keep: first
+
+  - type: ablation
+    method: llm-judge-binary
+    parameters:
+      provider: openai
+      model: gpt-4o-mini
+      consensus: all
+      criteria:
+        - Is the question written in english?
+        - Is the question consistent?
+
+output:
+  type: csv
+  properties:
+    path: tests/stubs/simple_pipeline/output.csv
+    separator: "\t"
