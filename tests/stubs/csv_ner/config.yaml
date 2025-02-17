@@ -1,0 +1,34 @@
+input:
+  type: csv
+  properties:
+    path: tests/stubs/csv_ner/source.csv
+    target_column: first_name
+    separator: "\t"
+
+pipeline:
+  - type: generation
+    method: llm
+    parameters:
+      provider: ollama
+      model: mistral-small:22b
+      template: |
+        ## Task
+        Ask a question between 5 and 15 words with the following first name: {source}.
+        {weighted_instructions}
+        question: 
+
+  - type: ablation
+    method: llm-judge-binary
+    parameters:
+      provider: openai
+      model: gpt-4o-mini
+      consensus: all
+      criteria:
+        - Is the question between 5 and 15 words ?
+        - Is the question in English?
+
+output:
+  type: csv
+  properties:
+    path: tests/stubs/csv_ner/output.csv
+    separator: "\t"
