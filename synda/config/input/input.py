@@ -11,7 +11,7 @@ from synda.pipeline.input import InputLoader
 
 class Input(BaseModel):
     type: Literal["csv", "xls"]
-    properties: CSVInputProperties | XLSInputProperties # | DatabaseSourceProperties
+    properties: CSVInputProperties | XLSInputProperties  # | DatabaseSourceProperties
 
     def get_loader(self) -> InputLoader:
         if self.type == "csv":

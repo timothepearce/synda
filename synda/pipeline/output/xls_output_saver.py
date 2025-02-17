@@ -21,4 +21,6 @@ class XLSOutputSaver(OutputSaver):
             }
         )
 
-        df.to_excel(self.properties.path, sheet_name=self.properties.sheet_name, index=False)
+        df.to_excel(
+            self.properties.path, sheet_name=self.properties.sheet_name, index=False
+        )

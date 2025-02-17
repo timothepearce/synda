@@ -37,7 +37,10 @@ def delete_provider(name: str) -> None:
 
 def update_provider(name: str, api_key: str, api_url: str) -> None:
     if api_key is None and api_url is None:
-        typer.secho("API key or API url is required for updating a provider", fg=typer.colors.RED)
+        typer.secho(
+            "API key or API url is required for updating a provider",
+            fg=typer.colors.RED,
+        )
         raise typer.Exit(1)
 
     try:
@@ -64,16 +67,15 @@ def provider_command(
         help="API key for model provider",
     ),
     api_url: str = typer.Option(
-        None,
-        "--api-url",
-        "-k",
-        help="API url to call for model provider"
-    )
+        None, "--api-url", "-k", help="API url to call for model provider"
+    ),
 ):
     action_handlers = {
         ProviderAction.ADD: lambda: add_provider(model_provider, api_key, api_url),
         ProviderAction.DELETE: lambda: delete_provider(model_provider),
-        ProviderAction.UPDATE: lambda: update_provider(model_provider, api_key, api_url),
+        ProviderAction.UPDATE: lambda: update_provider(
+            model_provider, api_key, api_url
+        ),
     }
 
     action_handlers[action]()

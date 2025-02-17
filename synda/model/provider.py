@@ -10,7 +10,9 @@ class Provider(SQLModel, table=True):
     api_url: str | None = Field(default=None, unique=True)
 
     @staticmethod
-    def create(name: str, api_key: str | None = None, api_url: str | None = None) -> "Provider":
+    def create(
+        name: str, api_key: str | None = None, api_url: str | None = None
+    ) -> "Provider":
         with Session(engine) as session:
             provider = Provider(name=name, api_key=api_key, api_url=api_url)
             session.add(provider)

@@ -45,7 +45,7 @@ class LLMJudgeBinary(Executor):
                         self.provider.api_key,
                         prompt,
                         LLMJudgeCriterionBinaryAnswer,
-                        url=self.provider.api_url
+                        url=self.provider.api_url,
                     )
                     try:
                         judge_answer = LLMJudgeCriterionBinaryAnswer(
