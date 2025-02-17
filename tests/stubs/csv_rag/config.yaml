@@ -1,8 +1,9 @@
 input:
   type: csv
   properties:
-    path: tests/stubs/simple_pipeline/source.csv
+    path: tests/stubs/csv_rag/source.csv
     target_column: content
+    separator: "\t"
 
 pipeline:
   - type: split
@@ -54,5 +55,5 @@ pipeline:
 output:
   type: csv
   properties:
-    path: tests/stubs/simple_pipeline/output.csv
+    path: tests/stubs/csv_rag/output.csv
     separator: "\t"

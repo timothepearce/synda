@@ -1,7 +1,7 @@
 input:
   type: xls
   properties:
-    path: tests/stubs/simple_pipeline/source.xlsx
+    path: tests/stubs/xls_rag/source.xlsx
     target_column: content
 
 pipeline:
@@ -55,4 +55,4 @@ pipeline:
 output:
   type: xls
   properties:
-    path: tests/stubs/simple_pipeline/output.xlsx
+    path: tests/stubs/xls_rag/output.xlsx

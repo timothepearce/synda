@@ -1,8 +1,9 @@
 input:
   type: csv
   properties:
-    path: tests/stubs/simple_pipeline/source.csv
+    path: tests/stubs/ollama_rag/source.csv
     target_column: content
+    separator: "\t"
 
 pipeline:
   - type: split
@@ -22,7 +23,7 @@ pipeline:
     method: llm
     parameters:
       provider: ollama
-      model: llama3.2
+      model: mistral-small:22b
       template: |
         Ask a question regarding the sentence about the content.
         content: {chunk_faq}
@@ -45,7 +46,7 @@ pipeline:
     method: llm-judge-binary
     parameters:
       provider: ollama
-      model: llama3.2
+      model: mistral-small:22b
       consensus: all
       criteria:
         - Is the question written in english?
@@ -54,5 +55,5 @@ pipeline:
 output:
   type: csv
   properties:
-    path: tests/stubs/simple_pipeline/output.csv
+    path: tests/stubs/ollama_rag/output.csv
     separator: "\t"
