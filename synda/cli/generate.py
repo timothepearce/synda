@@ -15,12 +15,10 @@ def generate_command(
             resolve_path=True,
         ),
         retry: bool = typer.Option(
-            typer.Option(
-                False,
-                "--retry",
-                "-k",
-                help="Run the pipeline from last failed step"
-            )
+            False,
+            "--retry",
+            "-k",
+            help="Run the pipeline from last failed step"
         )
 ):
     """Run a pipeline with provided configuration."""
