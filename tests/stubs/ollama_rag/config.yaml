@@ -24,7 +24,7 @@ pipeline:
     parameters:
       provider: ollama
       model: mistral-small:22b
-      occurrences: 3
+      occurrences: 6
       template: |
         Ask a question regarding the sentence about the content.
         content: {chunk_faq}
@@ -40,7 +40,7 @@ pipeline:
     method: deduplicate-tf-idf
     parameters:
       strategy: fuzzy
-      similarity_threshold: 0.9
+      similarity_threshold: 0.6
       keep: first
 
   - type: ablation

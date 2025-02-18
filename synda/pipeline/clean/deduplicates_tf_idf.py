@@ -1,4 +1,3 @@
-from typing import List
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sqlmodel import Session
@@ -15,7 +14,7 @@ class DeduplicateTFIDF(Executor):
         super().__init__(session, run, step_model)
         self.progress = ProgressManager("CLEAN")
 
-    def execute(self, input_data: List[Node]) -> List[Node]:
+    def execute(self, input_data: list[Node]) -> list[Node]:
         strategy = self.config.parameters.strategy
         similarity_threshold = self.config.parameters.similarity_threshold
         keep = self.config.parameters.keep
@@ -33,7 +32,7 @@ class DeduplicateTFIDF(Executor):
         return [Node(value=item) for item in result_list]
 
     @staticmethod
-    def _remove_exact_duplicates(data: List[str], keep: str, advance) -> List[str]:
+    def _remove_exact_duplicates(data: list[str], keep: str, advance) -> list[str]:
         seen_values = set()
         result = []
 
@@ -52,26 +51,30 @@ class DeduplicateTFIDF(Executor):
 
         return result
 
+    @staticmethod
     def _remove_fuzzy_duplicates(
-        self, data: List[str], similarity_threshold: float, keep: str, advance
-    ) -> List[str]:
+            node_values: list[str], similarity_threshold: float, keep: str, advance
+    ) -> list[str]:
         vectorizer = TfidfVectorizer(strip_accents="unicode")
-        tfidf_matrix = vectorizer.fit_transform(data)
+        tfidf_matrix = vectorizer.fit_transform(node_values)
         similarity_matrix = cosine_similarity(tfidf_matrix)
-        to_keep = set(range(len(data)))
+        index_node_to_keep = set(range(len(node_values)))
 
-        for i in range(len(data)):
-            if i not in to_keep:
+        for node_index in range(len(node_values)):
+            if node_index not in index_node_to_keep:
+                advance()
                 continue
-            for j in range(i + 1, len(data)):
-                if j not in to_keep:
+
+            for compared_node_index in range(node_index + 1, len(node_values)):
+                if compared_node_index not in index_node_to_keep:
                     continue
-                if similarity_matrix[i, j] > similarity_threshold:
+                if similarity_matrix[node_index, compared_node_index] > similarity_threshold:
                     if keep == "first":
-                        to_keep.discard(j)
+                        index_node_to_keep.discard(compared_node_index)
                     elif keep == "last":
-                        to_keep.discard(i)
+                        index_node_to_keep.discard(node_index)
                         break
+
             advance()
 
-        return [data[i] for i in sorted(to_keep)]
+        return [node_values[i] for i in sorted(index_node_to_keep)]
