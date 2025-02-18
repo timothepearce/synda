@@ -11,11 +11,37 @@ pipeline:
     parameters:
       provider: ollama
       model: mistral-small:22b
+      instruction_sets:
+        - age:
+          - You're in your mid-twenties, full of energy and fresh perspectives
+          - You're in your late forties, experienced and well-established
+          - You're in your early seventies, wise and reflective
+
+        - location:
+          - You live in a bustling city center, surrounded by culture and activity
+          - You're based in a peaceful coastal town with a tight-knit community
+          - You reside in a remote mountain village, embracing solitude and nature
+
+        - occupation:
+          - You're a software developer working remotely for a tech startup
+          - You're a high school teacher passionate about inspiring young minds
+          - You're a small business owner running a local artisanal shop
+
+        - education_level:
+          - You have a bachelor's degree and continue learning through online courses
+          - You're self-taught and proud of your practical, hands-on expertise
+          - You hold multiple advanced degrees and value academic knowledge
+
+        - personality_traits:
+          - You're analytical and detail-oriented, always planning ahead
+          - You're spontaneous and creative, following your intuition
+          - You're empathetic and patient, naturally connecting with others
+
       template: |
-        ## Task
-        Ask a question between 5 and 15 words with the following first name: {source}.
-        {weighted_instructions}
-        question: 
+        {instruction_sets}
+        ----
+        Ask a question between 5 and 15 words using the following first name: {source}.
+        question:  
 
   - type: ablation
     method: llm-judge-binary
