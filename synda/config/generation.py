@@ -12,6 +12,7 @@ class GenerationParameters(BaseModel):
     provider: str = "openai"
     model: str = "gpt-4o-mini"
     template: str
+    occurrences: int = 1
 
 
 class Generation(Step):

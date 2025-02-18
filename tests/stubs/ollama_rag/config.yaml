@@ -24,6 +24,7 @@ pipeline:
     parameters:
       provider: ollama
       model: mistral-small:22b
+      occurrences: 3
       template: |
         Ask a question regarding the sentence about the content.
         content: {chunk_faq}
