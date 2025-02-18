@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "synda"
-version = "0.4.1"
+version = "0.5.0"
 description = "A CLI for generating synthetic data"
 authors = ["Timothé Pearce <timothe.pearce@gmail.com>"]
 license = "Apache 2.0"
@@ -13,7 +13,7 @@ packages = [{include = "synda"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 pyyaml = "^6.0.2"
-pydantic = "^2.10.5"
+pydantic = "^2.10.6"
 pandas = "^2.2.3"
 python-dotenv = "^1.0.1"
 litellm = "1.55.12"
