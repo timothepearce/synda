@@ -12,21 +12,31 @@ class SpecialVariable(Enum):
 
 
 class PromptBuilder:
+    # @todo send multiple template at once: template: str | list[str
+    # @todo send a single node at once: input_data: list[Node] | Node
     @staticmethod
     def build(
-            session: Session,
-            template: str,
-            input_data: list[Node],
-            instruction_sets: dict[str, list[str]] | None = None,
-    ) -> list[str]:
-        prompts_with_special_variables = PromptBuilder._build_prompts_with_special_variables(
-            template, input_data, instruction_sets
+        session: Session,
+        template: str,
+        input_data: list[Node],
+        instruction_sets: dict[str, list[str]] | None = None,
+    ) -> list[str] | str:
+        prompts_with_special_variables = (
+            PromptBuilder._build_prompts_with_special_variables(
+                template, input_data, instruction_sets
+            )
         )
-        prompts_with_template_variables = PromptBuilder._build_prompts_with_template_variables(
-            session, prompts_with_special_variables, input_data
+        prompts_with_template_variables = (
+            PromptBuilder._build_prompts_with_template_variables(
+                session, prompts_with_special_variables, input_data
+            )
         )
 
-        return prompts_with_template_variables
+        return (
+            prompts_with_template_variables
+            if len(prompts_with_template_variables) > 1
+            else prompts_with_template_variables[0]
+        )
 
     @staticmethod
     def _build_prompts_with_special_variables(
@@ -47,7 +57,7 @@ class PromptBuilder:
             for variable_name in special_variables:
                 if variable_name == SpecialVariable.INSTRUCTIONS.value:
                     variable_value[SpecialVariable.INSTRUCTIONS.value] = (
-                        PromptBuilder._handle_instructions_variable(instruction_sets)
+                        PromptBuilder._build_instructions(instruction_sets)
                     )
 
             formatted_prompt = template.format(**variable_value)
@@ -57,9 +67,9 @@ class PromptBuilder:
 
     @staticmethod
     def _build_prompts_with_template_variables(
-            session: Session,
-            prompts_with_special_variables: list[str],
-            input_data: list[Node],
+        session: Session,
+        prompts_with_special_variables: list[str],
+        input_data: list[Node],
     ) -> list[str]:
         template_variables = set()
         for prompt in prompts_with_special_variables:
@@ -70,7 +80,9 @@ class PromptBuilder:
 
         prompts_with_template_variables = []
 
-        parent_nodes = PromptBuilder._get_parent_nodes(session, template_variables, input_data)
+        parent_nodes = PromptBuilder._get_parent_nodes(
+            session, template_variables, input_data
+        )
 
         for node, prompt in zip(input_data, prompts_with_special_variables):
             variable_value = {}
@@ -110,26 +122,22 @@ class PromptBuilder:
         return rf"{{(?!{special_vars})([^}}]+)}}"
 
     @staticmethod
-    def _handle_instructions_variable(
-            instruction_sets: dict[str, list[str]] | None
-    ) -> str:
+    def _build_instructions(instruction_sets: dict[str, list[str]] | None) -> str:
         if instruction_sets is None:
             raise Exception("`instruction_sets` is missing from parameters.")
 
-        return PromptBuilder._build_instructions_set(instruction_sets)
-
-    @staticmethod
-    def _build_instructions_set(instructions_sets: dict[str, list[str]]) -> str:
         instructions_set = []
 
-        for category, instructions in instructions_sets.items():
+        for category, instructions in instruction_sets.items():
             selected_instruction = random.choice(instructions)
             instructions_set.append("- " + selected_instruction)
 
         return "\n".join(instructions_set)
 
     @staticmethod
-    def _get_parent_nodes(session: Session, variables: set[str], input_data: list[Node]) -> list[Node]:
+    def _get_parent_nodes(
+        session: Session, variables: set[str], input_data: list[Node]
+    ) -> list[Node]:
         parent_node_ids = set()
 
         for node in input_data:

@@ -55,6 +55,7 @@ pipeline:
       consensus: all
       criteria:
         - Is the question in English?
+        - Does the question contains the "{source}" first name?
 #
 #  - type: metadata
 #    method: word-position

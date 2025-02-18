@@ -12,6 +12,7 @@ from synda.model.node import Node
 from synda.progress_manager import ProgressManager
 from synda.utils.env import is_debug_enabled
 from synda.utils.llm_provider import LLMProvider
+from synda.utils.prompt_builder import PromptBuilder
 
 
 class LLMJudgeCriterionBinaryAnswer(BaseModel):
@@ -28,6 +29,7 @@ class LLMJudgeBinary(Executor):
         self.provider = Provider.get(self.config.parameters.provider)
         self.model = self.config.parameters.model
 
+    # @todo build criteria prompts in a single call
     def execute(self, input_data: list[Node]):
         criteria = self.config.parameters.criteria
         result = []
@@ -38,7 +40,12 @@ class LLMJudgeBinary(Executor):
             for node in input_data:
                 judge_answers = []
                 for criterion in criteria:
-                    prompt = self._build_binary_judge_prompt(node.value, criterion)
+                    criterion_prompt = PromptBuilder.build(
+                        self.session, criterion, [node]
+                    )
+                    prompt = self._build_binary_judge_prompt(
+                        node.value, criterion_prompt
+                    )
                     judge_answer = LLMProvider.call(
                         self.provider.name,
                         self.model,
@@ -95,7 +102,6 @@ class LLMJudgeBinary(Executor):
             case _:
                 raise ValueError(f"Unknown consensus: {consensus}")
 
-    # @todo use prompt builder for criterion
     # @todo move the criterion into step parameters
     @staticmethod
     def _build_binary_judge_prompt(candidate: str, criterion: str) -> str:
