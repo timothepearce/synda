@@ -20,20 +20,32 @@ class LLM(Executor):
     def execute(self, input_data: list[Node]):
         template = self.config.parameters.template
         occurrences = self.config.parameters.occurrences
-        prompts = PromptBuilder.build(self.session, template, input_data)
+        instruction_sets = self.config.parameters.instruction_sets
+        input_data = self._build_node_occurrences(input_data, occurrences)
+        prompts = PromptBuilder.build(
+            self.session, template, input_data, instruction_sets=instruction_sets
+        )
         result = []
 
-        with self.progress.task("Generating...", len(input_data) * occurrences) as advance:
+        with self.progress.task("Generating...", len(input_data)) as advance:
             for node, prompt in zip(input_data, prompts):
-                for occurrence in range(occurrences):
-                    llm_answer = LLMProvider.call(
-                        self.provider.name,
-                        self.model,
-                        self.provider.api_key,
-                        prompt,
-                        url=self.provider.api_url,
-                    )
-                    result.append(Node(parent_node_id=node.id, value=llm_answer))
-                    advance()
+                llm_answer = LLMProvider.call(
+                    self.provider.name,
+                    self.model,
+                    self.provider.api_key,
+                    prompt,
+                    url=self.provider.api_url,
+                )
+                result.append(Node(parent_node_id=node.id, value=llm_answer))
+                advance()
 
         return result
+
+    @staticmethod
+    def _build_node_occurrences(input_data: list[Node], occurrences: int) -> list[Node]:
+        nodes = []
+
+        for node in input_data:
+            [nodes.append(node) for _ in range(occurrences)]
+
+        return nodes

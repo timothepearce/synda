@@ -53,7 +53,7 @@ class DeduplicateTFIDF(Executor):
 
     @staticmethod
     def _remove_fuzzy_duplicates(
-            node_values: list[str], similarity_threshold: float, keep: str, advance
+        node_values: list[str], similarity_threshold: float, keep: str, advance
     ) -> list[str]:
         vectorizer = TfidfVectorizer(strip_accents="unicode")
         tfidf_matrix = vectorizer.fit_transform(node_values)
@@ -68,7 +68,10 @@ class DeduplicateTFIDF(Executor):
             for compared_node_index in range(node_index + 1, len(node_values)):
                 if compared_node_index not in index_node_to_keep:
                     continue
-                if similarity_matrix[node_index, compared_node_index] > similarity_threshold:
+                if (
+                    similarity_matrix[node_index, compared_node_index]
+                    > similarity_threshold
+                ):
                     if keep == "first":
                         index_node_to_keep.discard(compared_node_index)
                     elif keep == "last":

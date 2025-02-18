@@ -46,7 +46,7 @@ class LLMJudgeBinary(Executor):
                         prompt,
                         LLMJudgeCriterionBinaryAnswer,
                         url=self.provider.api_url,
-                        format="json"
+                        format="json",
                     )
                     try:
                         judge_answer = LLMJudgeCriterionBinaryAnswer(
@@ -102,21 +102,21 @@ class LLMJudgeBinary(Executor):
         return (
             f"You are an expert judge tasked with evaluating synthetic text data.\n"
             f"You are evaluating synthetic data against a given criterion.\n"
-            "You must answer ONLY with {\"answer\": \"YES\"} or {\"answer\": \"NO\"}.\n"
-            "Output {\"answer\": \"YES\"} when the criterion is fulfilled.\n"
-            "Output {\"answer\": \"NO\"} when the criterion is NOT fulfilled.\n"
+            'You must answer ONLY with {"answer": "YES"} or {"answer": "NO"}.\n'
+            'Output {"answer": "YES"} when the criterion is fulfilled.\n'
+            'Output {"answer": "NO"} when the criterion is NOT fulfilled.\n'
             f"------\n"
             f"criterion: Is the candidate written in english?\n"
             f"candidate: Great Britain is a bit pretentious to call itself “Great”.\n"
-            "{\"answer\": \"YES\"}\n"
+            '{"answer": "YES"}\n'
             f"------\n"
             f"criterion: Does the text contain more than 10 words?\n"
             f"candidate: The cat sleeps.\n"
-            "{\"answer\": \"NO\"}\n"
+            '{"answer": "NO"}\n'
             f"------\n"
             f"criterion: Does the text talks about the sun?\n"
             f"candidate: Synda is a synthetic data library.\n"
-            "{\"answer\": \"NO\"}\n"
+            '{"answer": "NO"}\n'
             f"------\n"
             f"criterion: {criterion}\n"
             f"candidate: {candidate}\n"

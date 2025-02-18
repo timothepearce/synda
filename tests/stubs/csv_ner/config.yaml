@@ -11,36 +11,39 @@ pipeline:
     parameters:
       provider: ollama
       model: mistral-small:22b
-      occurrences: 3
+      occurrences: 10
       instruction_sets:
-        - age:
+        age:
           - You're in your mid-twenties, full of energy and fresh perspectives
           - You're in your late forties, experienced and well-established
           - You're in your early seventies, wise and reflective
-
-        - location:
+        location:
           - You live in a bustling city center, surrounded by culture and activity
           - You're based in a peaceful coastal town with a tight-knit community
           - You reside in a remote mountain village, embracing solitude and nature
-
-        - occupation:
+        occupation:
           - You're a software developer working remotely for a tech startup
           - You're a high school teacher passionate about inspiring young minds
           - You're a small business owner running a local artisanal shop
-
-        - education_level:
+        education_level:
           - You have a bachelor's degree and continue learning through online courses
           - You're self-taught and proud of your practical, hands-on expertise
           - You hold multiple advanced degrees and value academic knowledge
-
-        - personality_traits:
+        personality_traits:
           - You're analytical and detail-oriented, always planning ahead
           - You're spontaneous and creative, following your intuition
           - You're empathetic and patient, naturally connecting with others
+        question:
+          - Ask a question between 5 and 15 words using the given first name
+        first_name_position:
+          - use first name at the beginning of your question
+          - Use the first name in the middle of your question
+          - Use the first name at the end of your question
 
       template: |
-        {instruction_sets}
-        - Ask a question between 5 and 15 words using the following first name: {source}.
+        {instructions}
+        - Use the following first name: {source}
+        ----
         question: 
 
   - type: ablation
@@ -52,19 +55,19 @@ pipeline:
       criteria:
         - Is the question between 5 and 15 words ?
         - Is the question in English?
-
-  - type: metadata
-    method: word-position
-    parameters:
-      label: FIRSTNAME
-      match: {source}
+#
+#  - type: metadata
+#    method: word-position
+#    parameters:
+#      label: FIRSTNAME
+#      match: {source}
 
 output:
   type: csv
   properties:
     path: tests/stubs/csv_ner/output.csv
     separator: "\t"
-    columns:
-      - value
-      - ablated
-      - metadata
+#    columns:
+#      - value
+#      - ablated
+#      - metadata
