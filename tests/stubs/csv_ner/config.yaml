@@ -11,6 +11,7 @@ pipeline:
     parameters:
       provider: ollama
       model: mistral-small:22b
+      occurrences: 3
       instruction_sets:
         - age:
           - You're in your mid-twenties, full of energy and fresh perspectives
@@ -39,9 +40,8 @@ pipeline:
 
       template: |
         {instruction_sets}
-        ----
-        Ask a question between 5 and 15 words using the following first name: {source}.
-        question:  
+        - Ask a question between 5 and 15 words using the following first name: {source}.
+        question: 
 
   - type: ablation
     method: llm-judge-binary
@@ -53,8 +53,18 @@ pipeline:
         - Is the question between 5 and 15 words ?
         - Is the question in English?
 
+  - type: metadata
+    method: word-position
+    parameters:
+      label: FIRSTNAME
+      match: {source}
+
 output:
   type: csv
   properties:
     path: tests/stubs/csv_ner/output.csv
     separator: "\t"
+    columns:
+      - value
+      - ablated
+      - metadata
