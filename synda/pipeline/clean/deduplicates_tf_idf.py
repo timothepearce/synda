@@ -20,41 +20,41 @@ class DeduplicateTFIDF(Executor):
         keep = self.config.parameters.keep
 
         with self.progress.task("  Cleaning...", len(input_data)) as advance:
-            data_list = [str(node.value) for node in input_data]
-
             if strategy == "exact":
-                result_list = self._remove_exact_duplicates(data_list, keep, advance)
+                result_nodes = self._remove_exact_duplicates(input_data, keep, advance)
             elif strategy == "fuzzy":
-                result_list = self._remove_fuzzy_duplicates(
-                    data_list, similarity_threshold, keep, advance
+                result_nodes = self._remove_fuzzy_duplicates(
+                    input_data, similarity_threshold, keep, advance
                 )
 
-        return [Node(value=item) for item in result_list]
+        return [Node(parent_node_id=node.id, value=node.value) for node in result_nodes]
 
     @staticmethod
-    def _remove_exact_duplicates(data: list[str], keep: str, advance) -> list[str]:
+    def _remove_exact_duplicates(input_data: list[Node], keep: str, advance) -> list[Node]:
         seen_values = set()
         result = []
 
         if keep == "first":
-            for item in data:
-                if item not in seen_values:
-                    seen_values.add(item)
-                    result.append(item)
+            for node in input_data:
+                if node.value not in seen_values:
+                    seen_values.add(node.value)
+                    result.append(node)
                 advance()
         elif keep == "last":
-            for item in reversed(data):
-                if item not in seen_values:
-                    seen_values.add(item)
-                    result.insert(0, item)
+            for node in reversed(input_data):
+                if node.value not in seen_values:
+                    seen_values.add(node.value)
+                    result.insert(0, node)
                 advance()
 
         return result
 
     @staticmethod
     def _remove_fuzzy_duplicates(
-        node_values: list[str], similarity_threshold: float, keep: str, advance
-    ) -> list[str]:
+        input_data: list[Node], similarity_threshold: float, keep: str, advance
+    ) -> list[Node]:
+        node_values = [node.value for node in input_data]
+
         vectorizer = TfidfVectorizer(strip_accents="unicode")
         tfidf_matrix = vectorizer.fit_transform(node_values)
         similarity_matrix = cosine_similarity(tfidf_matrix)
@@ -80,4 +80,4 @@ class DeduplicateTFIDF(Executor):
 
             advance()
 
-        return [node_values[i] for i in sorted(index_node_to_keep)]
+        return [input_data[i] for i in sorted(index_node_to_keep)]

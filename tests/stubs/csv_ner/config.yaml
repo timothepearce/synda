@@ -6,12 +6,18 @@ input:
     separator: "\t"
 
 pipeline:
+#  - type: metadata
+#    method: word-position
+#    parameters:
+#      label: FIRSTNAME
+#      match: {source}
+
   - type: generation
     method: llm
     parameters:
       provider: ollama
       model: mistral-small:22b
-      # occurrences: 4
+      occurrences: 4
       instruction_sets:
         age:
           - You're in your mid-twenties, full of energy and fresh perspectives
@@ -47,6 +53,13 @@ pipeline:
         ----
         question: 
 
+  - type: clean
+    method: deduplicate-tf-idf
+    parameters:
+      strategy: fuzzy
+      similarity_threshold: 0.6
+      keep: first
+
   - type: ablation
     method: llm-judge-binary
     parameters:
@@ -56,18 +69,13 @@ pipeline:
       criteria:
         - Is the question in English?
         - Does the question contains the "{source}" first name?
-#
-#  - type: metadata
-#    method: word-position
-#    parameters:
-#      label: FIRSTNAME
-#      match: {source}
 
 output:
   type: csv
   properties:
     path: tests/stubs/csv_ner/output.csv
     separator: "\t"
+#    all: true
 #    columns:
 #      - value
 #      - ablated
