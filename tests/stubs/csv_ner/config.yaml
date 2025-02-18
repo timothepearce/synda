@@ -11,7 +11,7 @@ pipeline:
     parameters:
       provider: ollama
       model: mistral-small:22b
-      occurrences: 10
+      # occurrences: 4
       instruction_sets:
         age:
           - You're in your mid-twenties, full of energy and fresh perspectives
@@ -34,26 +34,26 @@ pipeline:
           - You're spontaneous and creative, following your intuition
           - You're empathetic and patient, naturally connecting with others
         question:
-          - Ask a question between 5 and 15 words using the given first name
+          - Ask a question between 5 and 10 words using the given first name {source}
+          - Ask a question between 10 and 20 words using the given first name {source}
+          - Ask a question between 20 and 30 words using the given first name {source}
         first_name_position:
-          - use first name at the beginning of your question
-          - Use the first name in the middle of your question
-          - Use the first name at the end of your question
+          - Start your question with "{source}"
+          - Use the first name "{source}" in the middle of your question
+          - End your question with "{source}"
 
       template: |
         {instructions}
-        - Use the following first name: {source}
         ----
         question: 
 
   - type: ablation
     method: llm-judge-binary
     parameters:
-      provider: openai
-      model: gpt-4o-mini
+      provider: ollama
+      model: mistral-small:22b
       consensus: all
       criteria:
-        - Is the question between 5 and 15 words ?
         - Is the question in English?
 #
 #  - type: metadata
