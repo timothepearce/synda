@@ -9,6 +9,7 @@ class LLMProvider:
         model: str,
         api_key: str,
         prompt: str,
+        temperature: float = 1.0,
         response_format: BaseModel | None = None,
         url: str | None = None,
         format: str | None = None,
@@ -21,6 +22,7 @@ class LLMProvider:
             api_base=url,
             response_format=response_format,
             format=format,
+            temperature=temperature,
         )
 
         return response["choices"][0]["message"]["content"]

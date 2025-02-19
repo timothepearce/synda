@@ -35,6 +35,7 @@ class LLM(Executor):
                     self.provider.api_key,
                     prompt,
                     url=self.provider.api_url,
+                    temperature=self.config.parameters.temperature,
                 )
                 result.append(Node(parent_node_id=node.id, value=llm_answer))
                 advance()

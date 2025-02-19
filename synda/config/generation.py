@@ -13,6 +13,7 @@ class GenerationParameters(BaseModel):
     model: str = "gpt-4o-mini"
     instruction_sets: dict[str, list[str]] | None = None
     occurrences: int = 1
+    temperature: float = 1.0
     template: str
 
 
