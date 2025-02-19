@@ -10,7 +10,9 @@ from synda.pipeline.executor import Executor
 
 
 class WordPositionParameters(BaseModel):
-    matches: dict[str, str] = Field(description="A dictionary with 'key' = LABEl and 'value' = string to match")
+    matches: dict[str, str] = Field(
+        description="A dictionary with 'key' = LABEl and 'value' = string to match"
+    )
 
 
 class WordPosition(Step):
@@ -22,6 +24,7 @@ class WordPosition(Step):
         self, session: Session, run: Run, step_model: StepModel
     ) -> Executor:
         from synda.pipeline.metadata import WordPosition
+
         return WordPosition(session, run, step_model)
 
 

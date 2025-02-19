@@ -34,11 +34,15 @@ class WordPosition(Executor):
                             "label": label,
                             "start": match.start(),
                             "end": match.end(),
-                            "value": match.group()
+                            "value": match.group(),
                         }
                         metadata.append(metadata_entry)
 
-                result.append(Node(parent_node_id=node.id, value=node.value, node_metadata=metadata))
+                result.append(
+                    Node(
+                        parent_node_id=node.id, value=node.value, node_metadata=metadata
+                    )
+                )
                 advance()
 
         return result

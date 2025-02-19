@@ -13,7 +13,9 @@ class Node(SQLModel, table=True):
     ablated: bool = False
     value: str
     ancestors: dict = Field(default_factory=dict, sa_column=Column(JSON))
-    node_metadata: list[dict[str, Any]] = Field(default_factory=list, sa_column=Column(JSON))
+    node_metadata: list[dict[str, Any]] = Field(
+        default_factory=list, sa_column=Column(JSON)
+    )
 
     step_node_links: list["StepNode"] = Relationship(back_populates="node")
 

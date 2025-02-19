@@ -75,8 +75,6 @@ output:
   properties:
     path: tests/stubs/csv_ner/output.csv
     separator: "\t"
-#    all: true
-#    columns:
-#      - value
-#      - ablated
-#      - metadata
+    columns:
+      - value
+      - metadata

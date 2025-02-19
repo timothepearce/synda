@@ -30,7 +30,9 @@ class DeduplicateTFIDF(Executor):
         return [Node(parent_node_id=node.id, value=node.value) for node in result_nodes]
 
     @staticmethod
-    def _remove_exact_duplicates(input_data: list[Node], keep: str, advance) -> list[Node]:
+    def _remove_exact_duplicates(
+        input_data: list[Node], keep: str, advance
+    ) -> list[Node]:
         seen_values = set()
         result = []
 

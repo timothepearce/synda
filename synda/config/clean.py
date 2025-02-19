@@ -30,6 +30,7 @@ class DeduplicateTFIDF(Step):
         self, session: Session, run: Run, step_model: StepModel
     ) -> Executor:
         from synda.pipeline.clean import DeduplicateTFIDF
+
         return DeduplicateTFIDF(session, run, step_model)
 
 
