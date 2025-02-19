@@ -29,12 +29,10 @@ class DeduplicateTFIDF(Step):
     def get_executor(
         self, session: Session, run: Run, step_model: StepModel
     ) -> Executor:
-        if self.method == "deduplicate-tf-idf":
-            from synda.pipeline.clean import DeduplicateTFIDF
-
-            return DeduplicateTFIDF(session, run, step_model)
+        from synda.pipeline.clean import DeduplicateTFIDF
+        return DeduplicateTFIDF(session, run, step_model)
 
 
-Deduplicate = Annotated[DeduplicateTFIDF, Field(discriminator="method")]
+Clean = Annotated[DeduplicateTFIDF, Field(discriminator="method")]
 
-deduplicate_adapter = TypeAdapter(Deduplicate)
+deduplicate_adapter = TypeAdapter(Clean)

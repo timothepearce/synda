@@ -6,12 +6,6 @@ input:
     separator: "\t"
 
 pipeline:
-#  - type: metadata
-#    method: word-position
-#    parameters:
-#      label: FIRSTNAME
-#      match: {source}
-
   - type: generation
     method: llm
     parameters:
@@ -69,6 +63,12 @@ pipeline:
       criteria:
         - Is the question in English?
         - Does the question contains the "{source}" first name?
+
+  - type: metadata
+    method: word-position
+    parameters:
+      matches:
+        FIRSTNAME: "{source}"
 
 output:
   type: csv
