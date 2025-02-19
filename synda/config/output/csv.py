@@ -8,7 +8,7 @@ from synda.config.output.output_properties import OutputProperties
 class CSVOutputProperties(OutputProperties):
     path: str
     separator: str = Field(default=";")
-    columns: list[str] = Field(default=['value'])
+    columns: list[str] = Field(default=["value"])
 
     @model_validator(mode="after")
     def validate_properties(self) -> "CSVOutputProperties":

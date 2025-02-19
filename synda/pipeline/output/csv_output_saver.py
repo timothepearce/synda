@@ -16,7 +16,9 @@ class CSVOutputSaver(OutputSaver):
         data: dict[str, list] = {}
 
         for column in self.properties.columns:
-            data[column] = [self._get_node_attribute(node, column) for node in input_data]
+            data[column] = [
+                self._get_node_attribute(node, column) for node in input_data
+            ]
 
         df = pd.DataFrame(data)
 
@@ -24,11 +26,11 @@ class CSVOutputSaver(OutputSaver):
 
     @staticmethod
     def _get_node_attribute(node: Node, column: str) -> Any:
-        if column == 'value':
+        if column == "value":
             return node.value
-        elif column == 'ablated':
+        elif column == "ablated":
             return node.is_ablated_text()
-        elif column == 'metadata':
+        elif column == "metadata":
             return node.node_metadata
         else:
             raise ValueError(f"Unknown column: {column}")

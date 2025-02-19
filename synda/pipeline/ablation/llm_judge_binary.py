@@ -16,10 +16,11 @@ from synda.utils.prompt_builder import PromptBuilder
 
 
 class LLMJudgeCriterionBinaryAnswer(BaseModel):
-    answer: Literal["YES", "NO"]
+    # @todo hotfix structured generation with ollama doesn't work as expected
+    answer: Literal["YES", "NO", "OUI", "NON"]
 
     def is_positive_answer(self) -> bool:
-        return self.answer == "YES"
+        return self.answer == "YES" or self.answer == "OUI"
 
 
 class LLMJudgeBinary(Executor):
@@ -109,6 +110,7 @@ class LLMJudgeBinary(Executor):
             f"You are an expert judge tasked with evaluating synthetic text data.\n"
             f"You are evaluating synthetic data against a given criterion.\n"
             'You must answer ONLY with {"answer": "YES"} or {"answer": "NO"}.\n'
+            'ALWAYS answer in english {"answer": "YES"} or {"answer": "NO"}, never in another language.\n'
             'Output {"answer": "YES"} when the criterion is fulfilled.\n'
             'Output {"answer": "NO"} when the criterion is NOT fulfilled.\n'
             f"------\n"

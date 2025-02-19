@@ -1,4 +1,5 @@
 import re
+import unicodedata
 
 from sqlmodel import Session
 
@@ -26,7 +27,9 @@ class WordPosition(Executor):
 
                 for label, pattern in matches.items():
                     pattern = PromptBuilder.build(self.session, pattern, [node])
-                    regex_pattern = re.escape(pattern)
+                    regex_pattern = self._create_pattern_ignoring_case_and_accents(
+                        pattern
+                    )
                     match = re.search(regex_pattern, text)
 
                     if match:
@@ -46,3 +49,11 @@ class WordPosition(Executor):
                 advance()
 
         return result
+
+    @staticmethod
+    def _create_pattern_ignoring_case_and_accents(pattern: str) -> str:
+        pattern = pattern.lower()
+        pattern = unicodedata.normalize("NFKD", pattern)
+        pattern = "".join(c for c in pattern if ord(c) < 128)
+        pattern = re.escape(pattern)
+        return f"(?i){pattern}"
