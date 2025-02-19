@@ -1,3 +1,5 @@
+from typing import Any
+
 import pandas as pd
 
 from synda.config.output import Output
@@ -11,14 +13,24 @@ class CSVOutputSaver(OutputSaver):
         super().__init__()
 
     def save(self, input_data: list[Node]) -> None:
-        synthetic_data = [node.value for node in input_data]
-        ablated_data = [node.is_ablated_text() for node in input_data]
+        data: dict[str, list] = {}
 
-        df = pd.DataFrame(
-            {
-                "synthetic data": synthetic_data,
-                "ablated": ablated_data,
-            }
-        )
+        for column in self.properties.columns:
+            data[column] = [
+                self._get_node_attribute(node, column) for node in input_data
+            ]
+
+        df = pd.DataFrame(data)
 
         df.to_csv(self.properties.path, sep=self.properties.separator, index=False)
+
+    @staticmethod
+    def _get_node_attribute(node: Node, column: str) -> Any:
+        if column == "value":
+            return node.value
+        elif column == "ablated":
+            return node.is_ablated_text()
+        elif column == "metadata":
+            return node.node_metadata
+        else:
+            raise ValueError(f"Unknown column: {column}")

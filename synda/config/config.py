@@ -11,7 +11,8 @@ from synda.config.output import Output
 from synda.config.ablation import Ablation
 from synda.config.generation import Generation
 from synda.config.split import Split
-from synda.config.clean import Deduplicate
+from synda.config.clean import Clean
+from synda.config.metadata import Metadata
 from synda.database import engine
 from synda.model.provider import Provider
 
@@ -22,7 +23,7 @@ class MissingProviderError(Exception):
 
 class Config(BaseModel):
     input: Input
-    pipeline: list[Split | Generation | Ablation | Deduplicate]
+    pipeline: list[Split | Generation | Ablation | Clean | Metadata]
     output: Output
 
     @staticmethod

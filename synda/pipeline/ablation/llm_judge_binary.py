@@ -12,13 +12,15 @@ from synda.model.node import Node
 from synda.progress_manager import ProgressManager
 from synda.utils.env import is_debug_enabled
 from synda.utils.llm_provider import LLMProvider
+from synda.utils.prompt_builder import PromptBuilder
 
 
 class LLMJudgeCriterionBinaryAnswer(BaseModel):
-    answer: Literal["YES", "NO"]
+    # @todo hotfix structured generation with ollama doesn't work as expected
+    answer: Literal["YES", "NO", "OUI", "NON"]
 
     def is_positive_answer(self) -> bool:
-        return self.answer == "YES"
+        return self.answer == "YES" or self.answer == "OUI"
 
 
 class LLMJudgeBinary(Executor):
@@ -28,6 +30,7 @@ class LLMJudgeBinary(Executor):
         self.provider = Provider.get(self.config.parameters.provider)
         self.model = self.config.parameters.model
 
+    # @todo build criteria prompts in a single call
     def execute(self, input_data: list[Node]):
         criteria = self.config.parameters.criteria
         result = []
@@ -38,7 +41,12 @@ class LLMJudgeBinary(Executor):
             for node in input_data:
                 judge_answers = []
                 for criterion in criteria:
-                    prompt = self._build_binary_judge_prompt(node.value, criterion)
+                    criterion_prompt = PromptBuilder.build(
+                        self.session, criterion, [node]
+                    )
+                    prompt = self._build_binary_judge_prompt(
+                        node.value, criterion_prompt
+                    )
                     judge_answer = LLMProvider.call(
                         self.provider.name,
                         self.model,
@@ -46,7 +54,7 @@ class LLMJudgeBinary(Executor):
                         prompt,
                         LLMJudgeCriterionBinaryAnswer,
                         url=self.provider.api_url,
-                        format="json"
+                        format="json",
                     )
                     try:
                         judge_answer = LLMJudgeCriterionBinaryAnswer(
@@ -95,28 +103,28 @@ class LLMJudgeBinary(Executor):
             case _:
                 raise ValueError(f"Unknown consensus: {consensus}")
 
-    # @todo use prompt builder for criterion
     # @todo move the criterion into step parameters
     @staticmethod
     def _build_binary_judge_prompt(candidate: str, criterion: str) -> str:
         return (
             f"You are an expert judge tasked with evaluating synthetic text data.\n"
             f"You are evaluating synthetic data against a given criterion.\n"
-            "You must answer ONLY with {\"answer\": \"YES\"} or {\"answer\": \"NO\"}.\n"
-            "Output {\"answer\": \"YES\"} when the criterion is fulfilled.\n"
-            "Output {\"answer\": \"NO\"} when the criterion is NOT fulfilled.\n"
+            'You must answer ONLY with {"answer": "YES"} or {"answer": "NO"}.\n'
+            'ALWAYS answer in english {"answer": "YES"} or {"answer": "NO"}, never in another language.\n'
+            'Output {"answer": "YES"} when the criterion is fulfilled.\n'
+            'Output {"answer": "NO"} when the criterion is NOT fulfilled.\n'
             f"------\n"
             f"criterion: Is the candidate written in english?\n"
             f"candidate: Great Britain is a bit pretentious to call itself “Great”.\n"
-            "{\"answer\": \"YES\"}\n"
+            '{"answer": "YES"}\n'
             f"------\n"
             f"criterion: Does the text contain more than 10 words?\n"
             f"candidate: The cat sleeps.\n"
-            "{\"answer\": \"NO\"}\n"
+            '{"answer": "NO"}\n'
             f"------\n"
             f"criterion: Does the text talks about the sun?\n"
             f"candidate: Synda is a synthetic data library.\n"
-            "{\"answer\": \"NO\"}\n"
+            '{"answer": "NO"}\n'
             f"------\n"
             f"criterion: {criterion}\n"
             f"candidate: {candidate}\n"
