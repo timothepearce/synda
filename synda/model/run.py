@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from sqlmodel import Column, Relationship, SQLModel, Session, Field, JSON, select
 
 from synda.model.step import Step, StepStatus
+from synda.model.step_node import StepNode
 from synda.model.node import Node
 
 if TYPE_CHECKING:
@@ -15,6 +16,7 @@ if TYPE_CHECKING:
 class RunStatus(str, Enum):
     RUNNING = "running"
     FINISHED = "finished"
+    STOPPED = "stopped"
     ERRORED = "errored"
 
 
@@ -77,6 +79,14 @@ class Run(SQLModel, table=True):
     ) -> tuple[list[Node], list[Step]]:
 
         return
+
+    def resume_from_step(self, session: Session, step: "Step") -> tuple[list[Node], list[Step]]:
+        self.update(session, RunStatus.RUNNING)
+        input_node_ids: list[StepNode] = session.exec(
+            select(StepNode.node_id).where(StepNode.step_id==step.id)
+        ).fetchall()
+        input_nodes: list[Node] = session.exec(select(Node).where(Node.id.in_(input_node_ids))).fetchall()
+        return input_nodes, self.steps[step.position-1:]
 
     def update(self, session: Session, status: RunStatus) -> "Run":
         self.status = status

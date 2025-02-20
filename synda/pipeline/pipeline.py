@@ -1,6 +1,9 @@
 from functools import wraps
 from typing import TYPE_CHECKING
-from sqlmodel import Session
+
+from synda.model.step import Step, StepStatus
+from sqlmodel import Session, select
+from sqlalchemy import and_
 
 from synda.database import engine
 from synda.model.run import Run, RunStatus
@@ -72,3 +75,24 @@ class Pipeline:
         self.output_saver.save(input_nodes)
 
         self.run.update(self.session, RunStatus.FINISHED)
+
+    @handle_run_errors
+    def resume(self, run_id: int):
+        print(f"Resuming run {run_id}")
+        self.run = self.session.exec(select(Run).where(Run.id == run_id)).first()
+        resumed_step: Step = self.session.exec(
+            select(Step).where(
+                and_(Step.status != StepStatus.COMPLETED, Step.run_id == run_id)
+            ).order_by(Step.position.asc())
+        ).first()
+
+        input_nodes, remaining_steps = self.run.resume_from_step(self.session, step=resumed_step)
+
+        for step_ in remaining_steps:
+            if is_debug_enabled():
+                print(step_)
+
+            executor = step_.get_step_config().get_executor(
+                self.session, self.run, step_
+            )
+            input_nodes = executor.execute_and_update_step(input_nodes, restarted=True)
