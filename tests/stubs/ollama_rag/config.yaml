@@ -23,7 +23,7 @@ pipeline:
     method: llm
     parameters:
       provider: ollama
-      model: mistral-small:22b
+      model: llama3.2
       template: |
         Ask a question regarding the sentence about the content.
         content: {chunk_faq}
@@ -46,7 +46,7 @@ pipeline:
     method: llm-judge-binary
     parameters:
       provider: ollama
-      model: mistral-small:22b
+      model: llama3.2
       consensus: all
       criteria:
         - Is the question written in english?

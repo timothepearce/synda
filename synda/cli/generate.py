@@ -14,8 +14,21 @@ def generate_command(
         dir_okay=False,
         resolve_path=True,
     ),
+    resume: bool = typer.Option(
+        False,
+        "--resume",
+        "-k",
+        help="Resume the pipeline from a given run id"
+    ),
+    run_id: int = typer.Option(
+        None,
+        help="Run id to resume. Only use if --resume=True"
+    )
 ):
     """Run a pipeline with provided configuration."""
     config = Config.load_config(config_file)
     pipeline = Pipeline(config)
-    pipeline.execute()
+    if resume:
+        pipeline.resume(run_id=run_id)
+    else:
+        pipeline.execute()
