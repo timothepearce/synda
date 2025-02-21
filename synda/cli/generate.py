@@ -21,6 +21,7 @@ def generate_command(
     """Run a pipeline with provided configuration."""
     config = Config.load_config(config_file)
     pipeline = Pipeline(config)
+
     if retry:
         pipeline.execute_from_last_failed_step()
     else:
