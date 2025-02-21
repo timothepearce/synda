@@ -24,7 +24,9 @@ class Executor:
 
             self.step_model.set_completed(self.session, input_nodes, output_nodes)
 
-            return output_nodes
+            filtered_nodes = [node for node in output_nodes if not node.ablated]
+
+            return filtered_nodes
         except Exception as e:
             self.step_model.set_status(self.session, StepStatus.ERRORED)
             raise e

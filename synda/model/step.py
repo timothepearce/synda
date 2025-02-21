@@ -144,17 +144,26 @@ class Step(SQLModel, table=True):
                 from synda.config.split import split_adapter
 
                 return split_adapter.validate_python(self.step_config)
+
             case "generation":
                 from synda.config.generation import Generation
 
                 return Generation.model_validate(self.step_config)
+
             case "ablation":
                 from synda.config.ablation import Ablation
 
                 return Ablation.model_validate(self.step_config)
-            case "clean":
-                from synda.config.clean import Deduplicate
 
-                return Deduplicate.model_validate(self.step_config)
+            case "clean":
+                from synda.config.clean import Clean
+
+                return Clean.model_validate(self.step_config)
+
+            case "metadata":
+                from synda.config.metadata import Metadata
+
+                return Metadata.model_validate(self.step_config)
+
             case _:
                 raise ValueError(f"Unknown step type: {self.type}")

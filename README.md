@@ -135,15 +135,15 @@ The following features are planned for future releases.
 - [x] Allow injecting params from distant step into prompt
 - [x] Add Ollama with structured generation output
 - [x] Retry a failed run
+- [ ] Add vLLM with structured generation output
+- [ ] Batch processing logic (via param.) for LLMs steps
 - [ ] Move input into pipeline (step type: 'load')
 - [ ] Move output into pipeline (step type: 'export')
 - [ ] Allow pausing and resuming pipelines
 - [ ] Trace each synthetic data with his historic
 - [ ] Enable caching of each step's output
 - [ ] Implement custom scriptable step for developer
-- [ ] VLLM and transformers provider
 - [ ] Use Ray for large workload
-- [ ] Batch processing logic (via param.) for LLMs steps
 - [ ] Add a programmatic API
 
 ### Steps

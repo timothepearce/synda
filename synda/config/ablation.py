@@ -11,6 +11,7 @@ from synda.model.step import Step as StepModel
 class AblationParameters(BaseModel):
     provider: str = "openai"
     model: str = "gpt-4o-mini"
+    temperature: float | None = 1.0
     consensus: Literal["all", "any", "majority"]
     criteria: list[str]
 

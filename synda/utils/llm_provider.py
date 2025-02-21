@@ -12,6 +12,7 @@ class LLMProvider:
         response_format: BaseModel | None = None,
         url: str | None = None,
         format: str | None = None,
+        temperature: float = 1.0,
     ) -> str:
         provider = LLMProvider._resolve_provider(provider)
         response = completion(
@@ -21,6 +22,7 @@ class LLMProvider:
             api_base=url,
             response_format=response_format,
             format=format,
+            temperature=temperature,
         )
 
         return response["choices"][0]["message"]["content"]

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Union, Any
 from sqlmodel import SQLModel, Field, Relationship, Column, JSON, Session, select
 
 from synda.model.step_node import StepNode
@@ -13,6 +13,9 @@ class Node(SQLModel, table=True):
     ablated: bool = False
     value: str
     ancestors: dict = Field(default_factory=dict, sa_column=Column(JSON))
+    node_metadata: list[dict[str, Any]] = Field(
+        default_factory=list, sa_column=Column(JSON)
+    )
 
     step_node_links: list["StepNode"] = Relationship(back_populates="node")
 
