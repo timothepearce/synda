@@ -54,6 +54,7 @@ class LLMJudgeBinary(Executor):
                         prompt,
                         LLMJudgeCriterionBinaryAnswer,
                         url=self.provider.api_url,
+                        temperature=self.config.parameters.temperature,
                         format="json",
                     )
                     try:

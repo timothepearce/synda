@@ -11,9 +11,9 @@ from synda.model.step import Step as StepModel
 class GenerationParameters(BaseModel):
     provider: str = "openai"
     model: str = "gpt-4o-mini"
+    temperature: float | None = 1.0
     instruction_sets: dict[str, list[str]] | None = None
     occurrences: int = 1
-    temperature: float = 1.0
     template: str
 
 

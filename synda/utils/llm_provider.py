@@ -9,10 +9,10 @@ class LLMProvider:
         model: str,
         api_key: str,
         prompt: str,
-        temperature: float = 1.0,
         response_format: BaseModel | None = None,
         url: str | None = None,
         format: str | None = None,
+        temperature: float = 1.0,
     ) -> str:
         provider = LLMProvider._resolve_provider(provider)
         response = completion(
