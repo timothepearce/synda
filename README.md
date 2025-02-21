@@ -134,8 +134,9 @@ The following features are planned for future releases.
 - [x] Add "clean" -> "deduplicate" step
 - [x] Allow injecting params from distant step into prompt
 - [x] Add Ollama with structured generation output
+- [x] Retry a failed run
 - [ ] Add vLLM with structured generation output
-- [ ] Retry logic for LLM steps
+- [ ] Batch processing logic (via param.) for LLMs steps
 - [ ] Move input into pipeline (step type: 'load')
 - [ ] Move output into pipeline (step type: 'export')
 - [ ] Allow pausing and resuming pipelines
@@ -143,7 +144,6 @@ The following features are planned for future releases.
 - [ ] Enable caching of each step's output
 - [ ] Implement custom scriptable step for developer
 - [ ] Use Ray for large workload
-- [ ] Batch processing logic (via param.) for LLMs steps
 - [ ] Add a programmatic API
 
 ### Steps

@@ -1,11 +1,12 @@
 from datetime import datetime
 from enum import Enum
+from jsonschema.exceptions import ValidationError
 from typing import TYPE_CHECKING
 
-from sqlmodel import Column, Relationship, SQLModel, Session, Field, JSON
+from sqlmodel import Column, Relationship, SQLModel, Session, Field, JSON, select
 
-from synda.database import engine
 from synda.model.step import Step, StepStatus
+from synda.model.node import Node
 
 if TYPE_CHECKING:
     from synda.config import Config
@@ -24,6 +25,10 @@ class Run(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.now)
 
     steps: list[Step] = Relationship(back_populates="run")
+
+    @staticmethod
+    def get_from_step(session: Session, step: Step) -> "Run":
+        return session.exec(select(Run).where(Run.id == step.run_id)).first()
 
     @staticmethod
     def create_with_steps(session: Session, config: "Config") -> "Run":
@@ -51,6 +56,27 @@ class Run(SQLModel, table=True):
         session.refresh(run, ["steps"])
 
         return run
+
+    @staticmethod
+    def restart_from_step(
+        session: Session, config: "Config", step: "Step"
+    ) -> tuple["Run", list[Node], list[Step]]:
+        run = Run.get_from_step(session, step)
+
+        if run.config != config.model_dump():
+            raise ValidationError(
+                "The actual config is different from the restarted run config"
+            )
+
+        run.update(session, RunStatus.RUNNING)
+        input_nodes = Node.get_from_step(session, step)
+        return run, input_nodes, run.steps[step.position - 1 :]
+
+    def restart_run(
+        self, session: Session, last_failed_step: Step
+    ) -> tuple[list[Node], list[Step]]:
+
+        return
 
     def update(self, session: Session, status: RunStatus) -> "Run":
         self.status = status

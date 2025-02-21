@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from sqlmodel import Column, SQLModel, Field, Relationship, JSON, Session
+from sqlmodel import Column, SQLModel, Field, Relationship, JSON, Session, select
 
 from synda.model.step_node import StepNode
 from synda.model.node import Node
@@ -59,6 +59,14 @@ class Step(SQLModel, table=True):
         },
     )
 
+    @staticmethod
+    def get_last_failed(session: Session) -> "Step":
+        return session.exec(
+            select(Step)
+            .where(Step.status == StepStatus.ERRORED)
+            .order_by(Step.id.desc())  # noqa
+        ).first()
+
     def set_status(self, session: Session, status: str) -> "Step":
         self.status = status
         session.add(self)
@@ -67,7 +75,9 @@ class Step(SQLModel, table=True):
 
         return self
 
-    def set_running(self, session: Session, input_nodes: list[Node]) -> "Step":
+    def set_running(
+        self, session: Session, input_nodes: list[Node], restarted: bool = False
+    ) -> "Step":
         self.status = StepStatus.RUNNING
         self.run_at = datetime.now()
 
@@ -80,7 +90,8 @@ class Step(SQLModel, table=True):
             step_node = StepNode(
                 step_id=self.id, node_id=node.id, relationship_type="input"
             )
-            session.add(step_node)
+            if not restarted:
+                session.add(step_node)
 
         session.add(self)
         session.commit()

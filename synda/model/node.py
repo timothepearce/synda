@@ -56,5 +56,13 @@ class Node(SQLModel, table=True):
 
         return results[0] if single_result and results else results
 
+    @staticmethod
+    def get_from_step(session: Session, step: "Step") -> list["Node"]:
+        return session.exec(
+            select(Node)
+            .join(StepNode, Node.id == StepNode.node_id)
+            .where(StepNode.step_id == step.id)
+        ).fetchall()
+
     def is_ablated_text(self) -> str:
         return "yes" if self.ablated else "no"
