@@ -67,7 +67,9 @@ class Step(SQLModel, table=True):
 
         return self
 
-    def set_running(self, session: Session, input_nodes: list[Node], restarted: bool=False) -> "Step":
+    def set_running(
+        self, session: Session, input_nodes: list[Node], restarted: bool = False
+    ) -> "Step":
         self.status = StepStatus.RUNNING
         self.run_at = datetime.now()
 

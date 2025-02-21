@@ -44,9 +44,13 @@ class Pipeline:
     def execute_from_last_failed_step(self):
         try:
             last_failed_step: Step = self.session.exec(
-                select(Step).where(Step.status==StepStatus.ERRORED).order_by(Step.id.desc())
+                select(Step)
+                .where(Step.status == StepStatus.ERRORED)
+                .order_by(Step.id.desc())
             ).first()
-            self.run, input_nodes, remaining_steps = Run.restart_from_step(self.session, self.config, last_failed_step)
+            self.run, input_nodes, remaining_steps = Run.restart_from_step(
+                self.session, self.config, last_failed_step
+            )
 
             for step_ in remaining_steps:
                 if is_debug_enabled():
@@ -55,7 +59,9 @@ class Pipeline:
                 executor = step_.get_step_config().get_executor(
                     self.session, self.run, step_
                 )
-                input_nodes = executor.execute_and_update_step(input_nodes, restarted=True)
+                input_nodes = executor.execute_and_update_step(
+                    input_nodes, restarted=True
+                )
 
                 self.output_saver.save(input_nodes)
 
