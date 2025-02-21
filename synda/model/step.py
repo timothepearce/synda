@@ -61,7 +61,7 @@ class Step(SQLModel, table=True):
 
     @staticmethod
     def get_last_failed(session: Session) -> "Step":
-        session.exec(
+        return session.exec(
             select(Step)
             .where(Step.status == StepStatus.ERRORED)
             .order_by(Step.id.desc())  # noqa

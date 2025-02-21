@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 from sqlmodel import Column, Relationship, SQLModel, Session, Field, JSON, select
 
 from synda.model.step import Step, StepStatus
-from synda.model.step_node import StepNode
 from synda.model.node import Node
 
 if TYPE_CHECKING:
@@ -26,6 +25,10 @@ class Run(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.now)
 
     steps: list[Step] = Relationship(back_populates="run")
+
+    @staticmethod
+    def get_from_step(session: Session, step: Step) -> "Run":
+        return session.exec(select(Run).where(Run.id == step.run_id)).first()
 
     @staticmethod
     def create_with_steps(session: Session, config: "Config") -> "Run":
@@ -58,19 +61,15 @@ class Run(SQLModel, table=True):
     def restart_from_step(
         session: Session, config: "Config", step: "Step"
     ) -> tuple["Run", list[Node], list[Step]]:
-        run = session.exec(select(Run).where(Run.id == step.run_id)).first()
+        run = Run.get_from_step(session, step)
+
         if run.config != config.model_dump():
             raise ValidationError(
                 "The actual config is different from the restarted run config"
             )
-        run.update(session, RunStatus.RUNNING)
 
-        input_node_ids: list[StepNode] = session.exec(
-            select(StepNode.node_id).where(StepNode.step_id == step.id)
-        ).fetchall()
-        input_nodes: list[Node] = session.exec(
-            select(Node).where(Node.id.in_(input_node_ids))
-        ).fetchall()
+        run.update(session, RunStatus.RUNNING)
+        input_nodes = Node.get_from_step(session, step)
         return run, input_nodes, run.steps[step.position - 1 :]
 
     def restart_run(
