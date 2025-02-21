@@ -14,10 +14,10 @@ It is opinionated and fast by design, with plans to become highly configurable i
 
 Synda requires Python 3.10 or higher.
 
-You can install Synda using pip:
+You can install Synda using pipx:
 
 ```bash
-pip install synda
+pipx install synda
 ```
 
 ## Usage
@@ -111,10 +111,11 @@ The Nebula pipeline consists of three main parts:
 
 Currently, Synda supports four pipeline steps (as shown in the example above):
 
-- **split**: Breaks down data into chunks of defined size (`method: chunk` or `method: split`)
-- **generation**: Generates content using LLM models (`method: llm`)
+- **split**: Breaks down data (`method: chunk` or `method: split`)
+- **generation**: Generates content using LLMs (`method: llm`)
 - **clean**: Delete the duplicated data (`method: deduplicate-tf-idf`)
 - **ablation**: Filters data based on defined criteria (`method: llm-judge-binary`)
+- **metadata**: Add metadata to text (`method: word-position`)
 
 More steps will be added in future releases.
 
@@ -155,6 +156,8 @@ The following features are planned for future releases.
 - [ ] masking: NER (GliNER)
 - [ ] masking: Regexp
 - [ ] masking: PII
+- [ ] metadata: Word position
+- [ ] metadata: Regexp
 
 ### Ideas
 - [ ] translations (SeamlessM4T)
