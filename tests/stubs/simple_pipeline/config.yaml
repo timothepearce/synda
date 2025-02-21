@@ -1,9 +1,9 @@
 input:
-  type: xls
+  type: csv
   properties:
-    path: tests/stubs/xls_rag/source.xlsx
+    path: tests/stubs/simple_pipeline/source.csv
+    separator: "\t"
     target_column: content
-    sheet_name: Sheet1
 
 pipeline:
   - type: split
@@ -54,7 +54,7 @@ pipeline:
         - Is the question consistent?
 
 output:
-  type: xls
+  type: csv
   properties:
-    path: tests/stubs/xls_rag/output.xlsx
-    sheet_name: Sheet1
+    path: tests/stubs/simple_pipeline/output.csv
+    separator: "\t"

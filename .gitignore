@@ -172,3 +172,4 @@ cython_debug/
 # Project
 database.db
 output.csv
+output.xlsx
