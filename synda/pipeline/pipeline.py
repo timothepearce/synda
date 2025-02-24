@@ -101,7 +101,7 @@ class Pipeline:
     @handle_run_errors
     def resume(self, run_id: int):
         print(f"Resuming run {run_id}")
-        resumed_step = Step.get_resumed(session=self.session, run_id=run_id)
+        resumed_step = Step.get_step_to_resume(session=self.session, run_id=run_id)
 
         self.run, input_nodes, remaining_steps = Run.restart_from_step(session=self.session, step=resumed_step)
 

@@ -69,7 +69,7 @@ class Step(SQLModel, table=True):
         ).first()
 
     @staticmethod
-    def get_resumed(session: Session, run_id: int) -> "Step":
+    def get_step_to_resume(session: Session, run_id: int) -> "Step":
         return session.exec(
             select(Step).where(
                 and_(Step.status != StepStatus.COMPLETED, Step.run_id == run_id)
