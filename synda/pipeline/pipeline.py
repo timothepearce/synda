@@ -38,7 +38,27 @@ class Pipeline:
 
         return wrapper
 
+    @staticmethod
+    def handle_stop_option(func):
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            try:
+                result = func(self, *args, **kwargs)
+                self.run.update(self.session, RunStatus.FINISHED)
+                return result
+            except KeyboardInterrupt:
+                user_input = input(f"\nAre you sure you want to stop the run {self.run.id}? [y/N]: ").strip().lower()
+                if user_input == 'y':
+                    self.run.update(self.session, RunStatus.STOPPED)
+                    print(f"Run with id {self.run.id} is stopped.\n To resume the run, please use")
+                    print(f"synda generate --resume --run-id={self.run.id}")
+                    exit(0)
+                else:
+                    self.resume(run_id=self.run.id)
+        return wrapper
+
     @handle_run_errors
+    @handle_stop_option
     def execute(self):
         self.run = Run.create_with_steps(self.session, self.config)
         input_nodes = self.input_loader.load(self.session)
@@ -53,6 +73,7 @@ class Pipeline:
         self.output_saver.save(input_nodes)
 
         self.run.update(self.session, RunStatus.FINISHED)
+        print(f"Run {self.run.id} finished successfully!")
 
     @handle_run_errors
     def execute_from_last_failed_step(self):
@@ -62,7 +83,7 @@ class Pipeline:
             raise Exception("Can't find any failed step.")
 
         self.run, input_nodes, remaining_steps = Run.restart_from_step(
-            self.session, self.config, last_failed_step
+            session=self.session, step=last_failed_step, config=self.config, config_check=True
         )
 
         for step in remaining_steps:
@@ -75,18 +96,14 @@ class Pipeline:
         self.output_saver.save(input_nodes)
 
         self.run.update(self.session, RunStatus.FINISHED)
+        print(f"Run {self.run.id} finished successfully!")
 
     @handle_run_errors
     def resume(self, run_id: int):
         print(f"Resuming run {run_id}")
-        self.run = self.session.exec(select(Run).where(Run.id == run_id)).first()
-        resumed_step: Step = self.session.exec(
-            select(Step).where(
-                and_(Step.status != StepStatus.COMPLETED, Step.run_id == run_id)
-            ).order_by(Step.position.asc())
-        ).first()
+        resumed_step = Step.get_resumed(session=self.session, run_id=run_id)
 
-        input_nodes, remaining_steps = self.run.resume_from_step(self.session, step=resumed_step)
+        self.run, input_nodes, remaining_steps = Run.restart_from_step(session=self.session, step=resumed_step)
 
         for step_ in remaining_steps:
             if is_debug_enabled():
@@ -96,3 +113,8 @@ class Pipeline:
                 self.session, self.run, step_
             )
             input_nodes = executor.execute_and_update_step(input_nodes, restarted=True)
+
+        self.output_saver.save(input_nodes)
+
+        self.run.update(self.session, RunStatus.FINISHED)
+        print(f"Run {self.run.id} finished successfully!")

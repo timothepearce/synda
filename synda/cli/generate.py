@@ -20,7 +20,7 @@ def generate_command(
     resume: bool = typer.Option(
         False,
         "--resume",
-        "-k",
+        "-re",
         help="Resume the pipeline from a given run id"
     ),
     run_id: int = typer.Option(
@@ -34,9 +34,7 @@ def generate_command(
 
     if retry:
         pipeline.execute_from_last_failed_step()
-    else:
-        pipeline.execute()
-    if resume:
+    elif resume:
         pipeline.resume(run_id=run_id)
     else:
         pipeline.execute()

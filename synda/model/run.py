@@ -1,12 +1,11 @@
 from datetime import datetime
 from enum import Enum
 from jsonschema.exceptions import ValidationError
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Column, Relationship, SQLModel, Session, Field, JSON, select
 
 from synda.model.step import Step, StepStatus
-from synda.model.step_node import StepNode
 from synda.model.node import Node
 
 if TYPE_CHECKING:
@@ -61,32 +60,19 @@ class Run(SQLModel, table=True):
 
     @staticmethod
     def restart_from_step(
-        session: Session, config: "Config", step: "Step"
+        session: Session, step: "Step", config_check: bool=False, config: Optional["Config"]=None
     ) -> tuple["Run", list[Node], list[Step]]:
         run = Run.get_from_step(session, step)
 
-        if run.config != config.model_dump():
-            raise ValidationError(
-                "The actual config is different from the restarted run config"
-            )
+        if config_check:
+            if run.config != config.model_dump():
+                raise ValidationError(
+                    "The actual config is different from the restarted run config"
+                )
 
         run.update(session, RunStatus.RUNNING)
         input_nodes = Node.get_from_step(session, step)
         return run, input_nodes, run.steps[step.position - 1 :]
-
-    def restart_run(
-        self, session: Session, last_failed_step: Step
-    ) -> tuple[list[Node], list[Step]]:
-
-        return
-
-    def resume_from_step(self, session: Session, step: "Step") -> tuple[list[Node], list[Step]]:
-        self.update(session, RunStatus.RUNNING)
-        input_node_ids: list[StepNode] = session.exec(
-            select(StepNode.node_id).where(StepNode.step_id==step.id)
-        ).fetchall()
-        input_nodes: list[Node] = session.exec(select(Node).where(Node.id.in_(input_node_ids))).fetchall()
-        return input_nodes, self.steps[step.position-1:]
 
     def update(self, session: Session, status: RunStatus) -> "Run":
         self.status = status
