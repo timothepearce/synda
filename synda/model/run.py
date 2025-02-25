@@ -1,7 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from jsonschema.exceptions import ValidationError
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from sqlmodel import Column, Relationship, SQLModel, Session, Field, JSON, select
 
@@ -59,17 +58,8 @@ class Run(SQLModel, table=True):
         return run
 
     @staticmethod
-    def restart_from_step(
-        session: Session, step: "Step", config_check: bool=False, config: Optional["Config"]=None
-    ) -> tuple["Run", list[Node], list[Step]]:
+    def restart_from_step(session: Session, step: "Step") -> tuple["Run", list[Node], list[Step]]:
         run = Run.get_from_step(session, step)
-
-        if config_check:
-            if run.config != config.model_dump():
-                raise ValidationError(
-                    "The actual config is different from the restarted run config"
-                )
-
         run.update(session, RunStatus.RUNNING)
         input_nodes = Node.get_from_step(session, step)
         return run, input_nodes, run.steps[step.position - 1 :]
