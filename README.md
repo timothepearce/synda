@@ -136,6 +136,7 @@ The following features are planned for future releases.
 - [x] Allow injecting params from distant step into prompt
 - [x] Add Ollama with structured generation output
 - [x] Retry a failed run
+- [ ] Add asynchronous behaviour for any CLI
 - [ ] Add vLLM with structured generation output
 - [ ] Batch processing logic (via param.) for LLMs steps
 - [ ] Move input into pipeline (step type: 'load')
