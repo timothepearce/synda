@@ -82,11 +82,11 @@ class Pipeline:
 
 
     @handle_run_errors
+    @handle_stop_option
     def execute_from_last_failed_step(self):
         from synda.config import Config
         CONSOLE.print("[blue]Retrying last failed run")
 
-        # session = Session(engine)
         last_failed_step = Step.get_last_failed(self.session)
 
         if last_failed_step is None:
@@ -114,7 +114,6 @@ class Pipeline:
         from synda.config import Config
         CONSOLE.print(f"[blue]Resuming run {run_id}")
 
-        # session = Session(engine)
         resumed_step = Step.get_step_to_resume(session=self.session, run_id=run_id)
 
         self.run, input_nodes, remaining_steps = Run.restart_from_step(session=self.session, step=resumed_step)
