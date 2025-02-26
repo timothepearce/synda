@@ -1,6 +1,5 @@
 from datetime import datetime
 from enum import Enum
-from jsonschema.exceptions import ValidationError
 from typing import TYPE_CHECKING
 
 from sqlmodel import Column, Relationship, SQLModel, Session, Field, JSON, select
@@ -15,6 +14,7 @@ if TYPE_CHECKING:
 class RunStatus(str, Enum):
     RUNNING = "running"
     FINISHED = "finished"
+    STOPPED = "stopped"
     ERRORED = "errored"
 
 
@@ -58,25 +58,11 @@ class Run(SQLModel, table=True):
         return run
 
     @staticmethod
-    def restart_from_step(
-        session: Session, config: "Config", step: "Step"
-    ) -> tuple["Run", list[Node], list[Step]]:
+    def restart_from_step(session: Session, step: "Step") -> tuple["Run", list[Node], list[Step]]:
         run = Run.get_from_step(session, step)
-
-        if run.config != config.model_dump():
-            raise ValidationError(
-                "The actual config is different from the restarted run config"
-            )
-
         run.update(session, RunStatus.RUNNING)
         input_nodes = Node.get_from_step(session, step)
         return run, input_nodes, run.steps[step.position - 1 :]
-
-    def restart_run(
-        self, session: Session, last_failed_step: Step
-    ) -> tuple[list[Node], list[Step]]:
-
-        return
 
     def update(self, session: Session, status: RunStatus) -> "Run":
         self.status = status

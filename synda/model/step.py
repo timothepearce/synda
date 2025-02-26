@@ -3,6 +3,7 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 from sqlmodel import Column, SQLModel, Field, Relationship, JSON, Session, select
+from sqlalchemy import and_
 
 from synda.model.step_node import StepNode
 from synda.model.node import Node
@@ -65,6 +66,14 @@ class Step(SQLModel, table=True):
             select(Step)
             .where(Step.status == StepStatus.ERRORED)
             .order_by(Step.id.desc())  # noqa
+        ).first()
+
+    @staticmethod
+    def get_step_to_resume(session: Session, run_id: int) -> "Step":
+        return session.exec(
+            select(Step).where(
+                and_(Step.status != StepStatus.COMPLETED, Step.run_id == run_id)
+            ).order_by(Step.position.asc())
         ).first()
 
     def set_status(self, session: Session, status: str) -> "Step":
