@@ -65,7 +65,7 @@ class Pipeline:
     def execute(self):
         if self.config is None:
             raise ValueError("Config can't be None to execute a pipeline")
-        # self.run = Run.create_with_steps(self.session, self.config)
+
         input_nodes = self.input_loader.load(self.session)
 
         for step in self.run.steps:
