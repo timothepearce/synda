@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Union, Any
 from sqlmodel import SQLModel, Field, Relationship, Column, JSON, Session, select
+from sqlalchemy import and_
 
 from synda.model.step_node import StepNode
 
@@ -57,12 +58,19 @@ class Node(SQLModel, table=True):
         return results[0] if single_result and results else results
 
     @staticmethod
-    def get_from_step(session: Session, step: "Step") -> list["Node"]:
-        return session.exec(
+    def get_from_step(session: Session, step: "Step") -> tuple[list["Node"], int]:
+        input_nodes_for_steps = session.exec(
             select(Node)
             .join(StepNode, Node.id == StepNode.node_id)
-            .where(StepNode.step_id == step.id)
+            .where(and_(StepNode.step_id == step.id, StepNode.relationship_type == "input"))
         ).fetchall()
+        already_treated_input_nodes_ids = session.exec(
+            select(Node.parent_node_id).where(Node.parent_node_id.in_([node.id for node in input_nodes_for_steps]))
+        ).fetchall()
+        return (
+            [node for node in input_nodes_for_steps if node.id not in already_treated_input_nodes_ids],
+            len(already_treated_input_nodes_ids)
+        )
 
     def is_ablated_text(self) -> str:
         return "yes" if self.ablated else "no"

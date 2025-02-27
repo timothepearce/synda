@@ -24,7 +24,7 @@ pipeline:
     parameters:
       provider: ollama
       model: llama3.2
-      occurrences: 6
+      occurrences: 1
       template: |
         Ask a question regarding the sentence about the content.
         content: {chunk_faq}

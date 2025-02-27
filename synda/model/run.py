@@ -58,11 +58,11 @@ class Run(SQLModel, table=True):
         return run
 
     @staticmethod
-    def restart_from_step(session: Session, step: "Step") -> tuple["Run", list[Node], list[Step]]:
+    def restart_from_step(session: Session, step: "Step") -> tuple["Run", list[Node], list[Step], int]:
         run = Run.get_from_step(session, step)
         run.update(session, RunStatus.RUNNING)
-        input_nodes = Node.get_from_step(session, step)
-        return run, input_nodes, run.steps[step.position - 1 :]
+        input_nodes, already_treated_input_nodes = Node.get_from_step(session, step)
+        return run, input_nodes, run.steps[step.position - 1 :], already_treated_input_nodes
 
     def update(self, session: Session, status: RunStatus) -> "Run":
         self.status = status

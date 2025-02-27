@@ -25,18 +25,20 @@ class LLMJudgeCriterionBinaryAnswer(BaseModel):
 
 class LLMJudgeBinary(Executor):
     def __init__(self, session: Session, run: Run, step_model: Step):
-        super().__init__(session, run, step_model)
+        super().__init__(session, run, step_model, save_at_end=False)
         self.progress = ProgressManager("ABLATION")
         self.provider = Provider.get(self.config.parameters.provider)
         self.model = self.config.parameters.model
 
     # @todo build criteria prompts in a single call
-    def execute(self, input_data: list[Node]):
+    def execute(self, input_data: list[Node], n_treated: int = 0):
         criteria = self.config.parameters.criteria
         result = []
 
         with self.progress.task(
-            "  Ablating...", len(input_data) * len(criteria)
+            "  Ablating...",
+                len(input_data) * len(criteria) + (n_treated * len(criteria)),
+                completed=n_treated * len(criteria)
         ) as advance_node:
             for node in input_data:
                 judge_answers = []
@@ -71,6 +73,7 @@ class LLMJudgeBinary(Executor):
                 result_node = Node(
                     parent_node_id=node.id, value=node.value, ablated=ablated
                 )
+                self.step_model.save_at_running(self.session, node, result_node)
                 result.append(result_node)
 
             if is_debug_enabled():

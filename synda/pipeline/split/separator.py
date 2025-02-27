@@ -12,7 +12,7 @@ class Separator(Executor):
         super().__init__(session, run, step_model)
         self.progress = ProgressManager("SPLIT")
 
-    def execute(self, input_data: list[Node]):
+    def execute(self, input_data: list[Node], n_treated: int = 0):
         result = []
         separator = self.config.parameters.separator
         keep_separator = self.config.parameters.keep_separator

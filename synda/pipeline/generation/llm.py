@@ -12,12 +12,12 @@ from synda.progress_manager import ProgressManager
 
 class LLM(Executor):
     def __init__(self, session: Session, run: Run, step_model: Step):
-        super().__init__(session, run, step_model)
+        super().__init__(session, run, step_model, save_at_end=False)
         self.progress = ProgressManager("GENERATION")
         self.provider = Provider.get(self.config.parameters.provider)
         self.model = self.config.parameters.model
 
-    def execute(self, input_data: list[Node]):
+    def execute(self, input_data: list[Node], n_treated: int = 0):
         template = self.config.parameters.template
         occurrences = self.config.parameters.occurrences
         instruction_sets = self.config.parameters.instruction_sets
@@ -26,7 +26,7 @@ class LLM(Executor):
             self.session, template, input_data, instruction_sets=instruction_sets
         )
         result = []
-        with self.progress.task("Generating...", len(input_data)) as advance:
+        with self.progress.task("Generating...", len(input_data) + n_treated, completed=n_treated) as advance:
             for node, prompt in zip(input_data, prompts):
                 llm_answer = LLMProvider.call(
                     self.provider.name,
@@ -36,7 +36,9 @@ class LLM(Executor):
                     url=self.provider.api_url,
                     temperature=self.config.parameters.temperature,
                 )
-                result.append(Node(parent_node_id=node.id, value=llm_answer))
+                result_node = Node(parent_node_id=node.id, value=llm_answer)
+                self.step_model.save_at_running(self.session, node, result_node)
+                result.append(result_node)
                 advance()
 
         return result
