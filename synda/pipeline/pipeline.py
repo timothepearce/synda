@@ -15,41 +15,6 @@ if TYPE_CHECKING:
 
 CONSOLE = Console()
 
-def handle_run_errors(func):
-    """Decorator to handle run errors gracefully."""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except Exception as e:
-            if hasattr(args[0], 'run') and args[0].run is not None:
-                args[0].run.update(args[0].session, RunStatus.ERRORED)
-            raise e
-    return wrapper
-
-
-def handle_stop_option(func):
-    """Decorator to handle user interruption (Ctrl+C) during execution."""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except KeyboardInterrupt:
-            self = args[0]  # Get the instance
-            if hasattr(self, 'run') and self.run is not None:
-                prompt = f"\nAre you sure you want to stop the run {self.run.id}? [y/N]: "
-                escaped_prompt = escape(prompt)
-
-                user_input = CONSOLE.input(f"[red]{escaped_prompt}[/]").strip().lower()
-
-                if user_input == 'y':
-                    self.run.update(self.session, RunStatus.STOPPED)
-                    CONSOLE.print(f"[blue]Run with id {self.run.id} is stopped.\nTo resume the run, use:")
-                    CONSOLE.print(f"[cyan]synda generate --resume {self.run.id}")
-                    exit(0)
-                else:
-                    Pipeline().resume(run_id=self.run.id)
-    return wrapper
 
 class Pipeline:
     def __init__(self, config: Optional["Config"] = None):
@@ -59,6 +24,42 @@ class Pipeline:
         self.output_saver = config.output.get_saver() if config else None
         self.pipeline = config.pipeline if config else None
         self.run = Run.create_with_steps(self.session, config) if config else None
+
+    @staticmethod
+    def handle_run_errors(func):
+        """Decorator to handle run errors gracefully."""
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except Exception as e:
+                if self.run is not None:
+                    self.run.update(self.session, RunStatus.ERRORED)
+                raise e
+        return wrapper
+
+    @staticmethod
+    def handle_stop_option(func):
+        """Decorator to handle user interruption (Ctrl+C) during execution."""
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except KeyboardInterrupt:
+                if self.run is not None:
+                    prompt = f"\nAre you sure you want to stop the run {self.run.id}? [y/N]: "
+                    escaped_prompt = escape(prompt)
+
+                    user_input = CONSOLE.input(f"[red]{escaped_prompt}[/]").strip().lower()
+
+                    if user_input == 'y':
+                        self.run.update(self.session, RunStatus.STOPPED)
+                        CONSOLE.print(f"[blue]Run with id {self.run.id} is stopped.\nTo resume the run, use:")
+                        CONSOLE.print(f"[cyan]synda generate --resume {self.run.id}")
+                        exit(0)
+                    else:
+                        self.resume(run_id=self.run.id)
+        return wrapper
 
     @handle_run_errors
     @handle_stop_option
