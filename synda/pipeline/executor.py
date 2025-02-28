@@ -8,12 +8,12 @@ from synda.model.node import Node
 
 
 class Executor:
-    def __init__(self, session: Session, run: Run, step_model: Step, save_at_end: bool=True):
+    def __init__(self, session: Session, run: Run, step_model: Step, save_on_completion: bool=True):
         self.session = session
         self.run = run
         self.step_model = step_model
         self.config = step_model.get_step_config()
-        self.save_at_end = save_at_end
+        self.save_on_completion = save_on_completion
 
     def execute_and_update_step(
         self, pending_nodes: list[Node], processed_nodes: list[Node], restarted: bool = False
@@ -22,7 +22,7 @@ class Executor:
             self.step_model.set_running(self.session, pending_nodes, restarted=restarted)
 
             output_nodes = self.execute(pending_nodes, processed_nodes)
-            if self.save_at_end:
+            if self.save_on_completion:
                 self.step_model.save_at_execution_end(self.session, pending_nodes, output_nodes)
             else:
                 self.step_model.set_completed(session=self.session)

@@ -13,7 +13,7 @@ from synda.progress_manager import ProgressManager
 
 class LLM(Executor):
     def __init__(self, session: Session, run: Run, step_model: Step):
-        super().__init__(session, run, step_model, save_at_end=False)
+        super().__init__(session, run, step_model, save_on_completion=False)
         self.progress = ProgressManager("GENERATION")
         self.provider = Provider.get(self.config.parameters.provider)
         self.model = self.config.parameters.model
