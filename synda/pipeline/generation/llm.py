@@ -1,4 +1,3 @@
-from typing import Optional
 
 from sqlmodel import Session
 
@@ -19,19 +18,19 @@ class LLM(Executor):
         self.provider = Provider.get(self.config.parameters.provider)
         self.model = self.config.parameters.model
 
-    def execute(self, input_data: list[Node], already_treated: list[Node]):
+    def execute(self, pending_nodes: list[Node], processed_nodes: list[Node]):
         template = self.config.parameters.template
         occurrences = self.config.parameters.occurrences
         instruction_sets = self.config.parameters.instruction_sets
-        input_data = self._build_node_occurrences(input_data, occurrences)
+        pending_nodes = self._build_node_occurrences(pending_nodes, occurrences)
         prompts = PromptBuilder.build(
-            self.session, template, input_data, instruction_sets=instruction_sets
+            self.session, template, pending_nodes, instruction_sets=instruction_sets
         )
-        result = already_treated or []
+        result = processed_nodes
         with self.progress.task(
-                "Generating...", len(input_data) + len(already_treated), completed=len(already_treated)
+                "Generating...", len(pending_nodes) + len(processed_nodes), completed=len(processed_nodes)
         ) as advance:
-            for node, prompt in zip(input_data, prompts):
+            for node, prompt in zip(pending_nodes, prompts):
                 llm_answer = LLMProvider.call(
                     self.provider.name,
                     self.model,
@@ -41,17 +40,17 @@ class LLM(Executor):
                     temperature=self.config.parameters.temperature,
                 )
                 result_node = Node(parent_node_id=node.id, value=llm_answer)
-                self.step_model.save_at_running(self.session, node, result_node)
+                self.step_model.save_during_execution(self.session, node, result_node)
                 result.append(result_node)
                 advance()
 
         return result
 
     @staticmethod
-    def _build_node_occurrences(input_data: list[Node], occurrences: int) -> list[Node]:
+    def _build_node_occurrences(pending_nodes: list[Node], occurrences: int) -> list[Node]:
         nodes = []
 
-        for node in input_data:
+        for node in pending_nodes:
             [nodes.append(node) for _ in range(occurrences)]
 
         return nodes

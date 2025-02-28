@@ -5,6 +5,7 @@ from rich.console import Console
 from rich.markup import escape
 from sqlmodel import Session
 
+from synda.model.node import NodeStatus
 from synda.database import engine
 from synda.model.run import Run, RunStatus
 from synda.model.step import Step
@@ -104,12 +105,14 @@ class Pipeline:
             executor = step_.get_step_config().get_executor(
                 self.session, self.run, step_
             )
+
             if restarted:
-                input_nodes = [node[0] for node in input_nodes if node[1] == "not_treated"]
-                already_treated = [node[0] for node in input_nodes if node[1] == "treated"]
+                processed_nodes = [node for node in input_nodes if node.status == NodeStatus.PROCESSED]
+                input_nodes = [node for node in input_nodes if node.status == NodeStatus.PENDING]
             else:
-                already_treated = []
-            input_nodes = executor.execute_and_update_step(input_nodes, already_treated, restarted)
+                processed_nodes = []
+
+            input_nodes = executor.execute_and_update_step(input_nodes, processed_nodes, restarted)
             restarted = False
 
         self.output_saver.save(input_nodes)
@@ -137,12 +140,14 @@ class Pipeline:
             executor = step_.get_step_config().get_executor(
                 self.session, self.run, step_
             )
+
             if restarted:
-                already_treated = [node[0] for node in input_nodes if node[1] == "treated"]
-                input_nodes = [node[0] for node in input_nodes if node[1] == "not_treated"]
+                processed_nodes = [node for node in input_nodes if node.status == NodeStatus.PROCESSED]
+                input_nodes = [node for node in input_nodes if node.status == NodeStatus.PENDING]
             else:
-                already_treated = []
-            input_nodes = executor.execute_and_update_step(input_nodes, already_treated, restarted)
+                processed_nodes = []
+
+            input_nodes = executor.execute_and_update_step(input_nodes, processed_nodes, restarted)
             restarted = False
 
         self.output_saver.save(input_nodes)

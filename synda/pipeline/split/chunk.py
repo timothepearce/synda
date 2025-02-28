@@ -12,12 +12,12 @@ class Chunk(Executor):
         super().__init__(session, run, step_model)
         self.progress = ProgressManager("SPLIT")
 
-    def execute(self, input_data: list[Node], already_treated: list[Node]):
+    def execute(self, pending_nodes: list[Node], processed_nodes: list[Node]):
         result = []
         size = self.config.parameters.size
 
-        with self.progress.task("  Chunking...", len(input_data)) as advance:
-            for node in input_data:
+        with self.progress.task("  Chunking...", len(pending_nodes)) as advance:
+            for node in pending_nodes:
                 text = node.value
 
                 while text:

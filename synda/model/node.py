@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import TYPE_CHECKING, Union, Any
 from sqlmodel import SQLModel, Field, Relationship, Column, JSON, Session, select
 from sqlalchemy import and_
@@ -7,6 +8,10 @@ from synda.model.step_node import StepNode
 if TYPE_CHECKING:
     from synda.model.step import Step
 
+class NodeStatus(Enum):
+    PENDING = "pending"
+    PROCESSED = "processed"
+
 
 class Node(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -14,6 +19,7 @@ class Node(SQLModel, table=True):
     ablated: bool = False
     value: str
     ancestors: dict = Field(default_factory=dict, sa_column=Column(JSON))
+    status: NodeStatus = Field(default=NodeStatus.PENDING)
     node_metadata: list[dict[str, Any]] = Field(
         default_factory=list, sa_column=Column(JSON)
     )
@@ -58,19 +64,19 @@ class Node(SQLModel, table=True):
         return results[0] if single_result and results else results
 
     @staticmethod
-    def get_input_nodes_from_step(session: Session, step: "Step") -> list[tuple["Node", str]]:
+    def get_input_nodes_from_step(session: Session, step: "Step") -> list["Node"]:
         input_nodes_for_steps = session.exec(
             select(Node)
             .join(StepNode, Node.id == StepNode.node_id)
             .where(and_(StepNode.step_id == step.id, StepNode.relationship_type == "input"))
         ).fetchall()
-        already_treated_input_nodes_ids = session.exec(
-            select(Node.parent_node_id).where(Node.parent_node_id.in_([node.id for node in input_nodes_for_steps]))
-        ).fetchall()
-        return [
-            (node, "treated") if node.id in already_treated_input_nodes_ids else (node, "not_treated")
-            for node in input_nodes_for_steps
-        ]
+        return input_nodes_for_steps
 
     def is_ablated_text(self) -> str:
         return "yes" if self.ablated else "no"
+
+    def set_processed(self, session: Session):
+        self.status = NodeStatus.PROCESSED
+        session.add(self)
+        session.commit()
+        session.refresh(self)

@@ -31,16 +31,16 @@ class LLMJudgeBinary(Executor):
         self.model = self.config.parameters.model
 
     # @todo build criteria prompts in a single call
-    def execute(self, input_data: list[Node], already_treated: list[Node]):
+    def execute(self, pending_nodes: list[Node], processed_nodes: list[Node]):
         criteria = self.config.parameters.criteria
-        result = already_treated or []
+        result = processed_nodes or []
 
         with self.progress.task(
             "  Ablating...",
-                (len(input_data) + len(already_treated)) * len(criteria),
-                completed=len(already_treated) * len(criteria)
+                (len(pending_nodes) + len(processed_nodes)) * len(criteria),
+                completed=len(processed_nodes) * len(criteria)
         ) as advance_node:
-            for node in input_data:
+            for node in pending_nodes:
                 judge_answers = []
                 for criterion in criteria:
                     criterion_prompt = PromptBuilder.build(
@@ -73,7 +73,7 @@ class LLMJudgeBinary(Executor):
                 result_node = Node(
                     parent_node_id=node.id, value=node.value, ablated=ablated
                 )
-                self.step_model.save_at_running(self.session, node, result_node)
+                self.step_model.save_during_execution(self.session, node, result_node)
                 result.append(result_node)
 
             if is_debug_enabled():

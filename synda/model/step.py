@@ -108,7 +108,7 @@ class Step(SQLModel, table=True):
 
         return self
 
-    def set_completed_at_the_end(
+    def save_at_execution_end(
         self, session: Session, input_nodes: list[Node], output_nodes: list[Node]
     ) -> "Step":
         self._create_nodes_with_ancestors(session, input_nodes, output_nodes)
@@ -118,7 +118,7 @@ class Step(SQLModel, table=True):
 
         return self
 
-    def save_at_running(self, session: Session, input_node: Node, output_node: Node) -> "Step":
+    def save_during_execution(self, session: Session, input_node: Node, output_node: Node) -> "Step":
         self._create_nodes_with_ancestors(session, [input_node], [output_node])
         self._map_nodes_to_step(session, [output_node])
 
@@ -148,6 +148,9 @@ class Step(SQLModel, table=True):
             parent_node = next(node for node in input_nodes if node.id == parent_id)
             node.ancestors = parent_node.ancestors | {self.name: node.id}
             session.add(node)
+
+        for node in input_nodes:
+            node.set_processed(session)
 
     def _map_nodes_to_step(self, session: Session, output_nodes: list[Node]):
         for node in output_nodes:
