@@ -12,7 +12,7 @@ class Chunk(Executor):
         super().__init__(session, run, step_model)
         self.progress = ProgressManager("SPLIT")
 
-    def execute(self, input_data: list[Node], n_treated: int = 0):
+    def execute(self, input_data: list[Node], already_treated: list[Node]):
         result = []
         size = self.config.parameters.size
 

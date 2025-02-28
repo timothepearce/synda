@@ -16,7 +16,7 @@ class WordPosition(Executor):
         super().__init__(session, run, step_model)
         self.progress = ProgressManager("METADATA")
 
-    def execute(self, input_data: list[Node], n_treated: int = 0):
+    def execute(self, input_data: list[Node], already_treated: list[Node]):
         result = []
         matches = self.config.parameters.matches
 

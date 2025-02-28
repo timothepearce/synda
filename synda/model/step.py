@@ -111,14 +111,10 @@ class Step(SQLModel, table=True):
     def set_completed_at_the_end(
         self, session: Session, input_nodes: list[Node], output_nodes: list[Node]
     ) -> "Step":
-        self.status = StepStatus.COMPLETED
-
         self._create_nodes_with_ancestors(session, input_nodes, output_nodes)
         self._map_nodes_to_step(session, output_nodes)
-        # print(f"Nodes saved: {input_nodes} --- {output_nodes}")
-        session.add(self)
-        session.commit()
-        session.refresh(self)
+
+        self.set_completed(session)
 
         return self
 
