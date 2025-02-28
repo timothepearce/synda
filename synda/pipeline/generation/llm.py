@@ -25,7 +25,7 @@ class LLM(Executor):
         prompts = PromptBuilder.build(
             self.session, template, input_data, instruction_sets=instruction_sets
         )
-        result = []
+        result = Node.get_already_treated(self.session, self.step_model) if n_treated > 0 else []
         with self.progress.task("Generating...", len(input_data) + n_treated, completed=n_treated) as advance:
             for node, prompt in zip(input_data, prompts):
                 llm_answer = LLMProvider.call(

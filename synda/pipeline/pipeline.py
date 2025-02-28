@@ -120,6 +120,7 @@ class Pipeline:
         self.run, input_nodes, remaining_steps, treated = Run.restart_from_step(session=self.session, step=resumed_step)
         self.config = Config.model_validate(self.run.config)
         self.output_saver = self.config.output.get_saver()
+        restarted = True
         for step_ in remaining_steps:
             if is_debug_enabled():
                 print(step_)
@@ -127,7 +128,9 @@ class Pipeline:
             executor = step_.get_step_config().get_executor(
                 self.session, self.run, step_
             )
-            input_nodes = executor.execute_and_update_step(input_nodes, restarted=True, n_treated=treated)
+            input_nodes = executor.execute_and_update_step(input_nodes, restarted=restarted, n_treated=treated)
+            treated = 0
+            restarted = False
 
         self.output_saver.save(input_nodes)
 

@@ -71,6 +71,13 @@ class Node(SQLModel, table=True):
             [node for node in input_nodes_for_steps if node.id not in already_treated_input_nodes_ids],
             len(already_treated_input_nodes_ids)
         )
+    @staticmethod
+    def get_already_treated(session: Session, step: "Step") -> list["Node"]:
+        return session.exec(
+            select(Node)
+            .join(StepNode, Node.id == StepNode.node_id)
+            .where(and_(StepNode.step_id == step.id, StepNode.relationship_type == "output"))
+        ).fetchall()
 
     def is_ablated_text(self) -> str:
         return "yes" if self.ablated else "no"
