@@ -74,7 +74,7 @@ class Pipeline:
                 print(step)
 
             executor = step.get_step_config().get_executor(self.session, self.run, step)
-            input_nodes = executor.execute_and_update_step(input_nodes)
+            input_nodes = executor.execute_and_update_step(input_nodes, [], False)
 
         self.output_saver.save(input_nodes)
 
@@ -96,17 +96,26 @@ class Pipeline:
         self.run, input_nodes, remaining_steps = Run.restart_from_step(session=self.session, step=last_failed_step)
         self.config = Config.model_validate(self.run.config)
         self.output_saver = self.config.output.get_saver()
-        for step in remaining_steps:
+        restarted = True
+        for step_ in remaining_steps:
             if is_debug_enabled():
-                print(step)
+                print(step_)
 
-            executor = step.get_step_config().get_executor(self.session, self.run, step)
-            input_nodes = executor.execute_and_update_step(input_nodes, restarted=True)
+            executor = step_.get_step_config().get_executor(
+                self.session, self.run, step_
+            )
+            if restarted:
+                input_nodes = [node[0] for node in input_nodes if node[1] == "not_treated"]
+                already_treated = [node[0] for node in input_nodes if node[1] == "treated"]
+            else:
+                already_treated = []
+            input_nodes = executor.execute_and_update_step(input_nodes, already_treated, restarted)
+            restarted = False
 
         self.output_saver.save(input_nodes)
 
         self.run.update(self.session, RunStatus.FINISHED)
-        print(f"[green]Run {self.run.id} finished successfully!")
+        CONSOLE.print(f"[green]Run {self.run.id} finished successfully!")
 
 
     @handle_run_errors
@@ -117,7 +126,7 @@ class Pipeline:
 
         resumed_step = Step.get_step_to_resume(session=self.session, run_id=run_id)
 
-        self.run, input_nodes, remaining_steps, treated = Run.restart_from_step(session=self.session, step=resumed_step)
+        self.run, input_nodes, remaining_steps = Run.restart_from_step(session=self.session, step=resumed_step)
         self.config = Config.model_validate(self.run.config)
         self.output_saver = self.config.output.get_saver()
         restarted = True
@@ -128,8 +137,12 @@ class Pipeline:
             executor = step_.get_step_config().get_executor(
                 self.session, self.run, step_
             )
-            input_nodes = executor.execute_and_update_step(input_nodes, restarted=restarted, n_treated=treated)
-            treated = 0
+            if restarted:
+                already_treated = [node[0] for node in input_nodes if node[1] == "treated"]
+                input_nodes = [node[0] for node in input_nodes if node[1] == "not_treated"]
+            else:
+                already_treated = []
+            input_nodes = executor.execute_and_update_step(input_nodes, already_treated, restarted)
             restarted = False
 
         self.output_saver.save(input_nodes)

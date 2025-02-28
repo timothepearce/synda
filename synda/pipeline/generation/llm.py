@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlmodel import Session
 
 from synda.model.provider import Provider
@@ -17,7 +19,7 @@ class LLM(Executor):
         self.provider = Provider.get(self.config.parameters.provider)
         self.model = self.config.parameters.model
 
-    def execute(self, input_data: list[Node], n_treated: int = 0):
+    def execute(self, input_data: list[Node], already_treated: list[Node]):
         template = self.config.parameters.template
         occurrences = self.config.parameters.occurrences
         instruction_sets = self.config.parameters.instruction_sets
@@ -25,8 +27,10 @@ class LLM(Executor):
         prompts = PromptBuilder.build(
             self.session, template, input_data, instruction_sets=instruction_sets
         )
-        result = Node.get_already_treated(self.session, self.step_model) if n_treated > 0 else []
-        with self.progress.task("Generating...", len(input_data) + n_treated, completed=n_treated) as advance:
+        result = already_treated or []
+        with self.progress.task(
+                "Generating...", len(input_data) + len(already_treated), completed=len(already_treated)
+        ) as advance:
             for node, prompt in zip(input_data, prompts):
                 llm_answer = LLMProvider.call(
                     self.provider.name,

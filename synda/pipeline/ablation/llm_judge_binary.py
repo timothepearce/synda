@@ -1,5 +1,5 @@
 import json
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 from sqlmodel import Session
@@ -31,14 +31,14 @@ class LLMJudgeBinary(Executor):
         self.model = self.config.parameters.model
 
     # @todo build criteria prompts in a single call
-    def execute(self, input_data: list[Node], n_treated: int = 0):
+    def execute(self, input_data: list[Node], already_treated: list[Node]):
         criteria = self.config.parameters.criteria
-        result = []
+        result = already_treated or []
 
         with self.progress.task(
             "  Ablating...",
-                len(input_data) * len(criteria) + (n_treated * len(criteria)),
-                completed=n_treated * len(criteria)
+                (len(input_data) + len(already_treated)) * len(criteria),
+                completed=len(already_treated) * len(criteria)
         ) as advance_node:
             for node in input_data:
                 judge_answers = []

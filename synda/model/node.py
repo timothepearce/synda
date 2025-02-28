@@ -58,7 +58,7 @@ class Node(SQLModel, table=True):
         return results[0] if single_result and results else results
 
     @staticmethod
-    def get_from_step(session: Session, step: "Step") -> tuple[list["Node"], int]:
+    def get_input_nodes_from_step(session: Session, step: "Step") -> list[tuple["Node", str]]:
         input_nodes_for_steps = session.exec(
             select(Node)
             .join(StepNode, Node.id == StepNode.node_id)
@@ -67,10 +67,11 @@ class Node(SQLModel, table=True):
         already_treated_input_nodes_ids = session.exec(
             select(Node.parent_node_id).where(Node.parent_node_id.in_([node.id for node in input_nodes_for_steps]))
         ).fetchall()
-        return (
-            [node for node in input_nodes_for_steps if node.id not in already_treated_input_nodes_ids],
-            len(already_treated_input_nodes_ids)
-        )
+        return [
+            (node, "treated") if node.id in already_treated_input_nodes_ids else (node, "not_treated")
+            for node in input_nodes_for_steps
+        ]
+
     @staticmethod
     def get_already_treated(session: Session, step: "Step") -> list["Node"]:
         return session.exec(
