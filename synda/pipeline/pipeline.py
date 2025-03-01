@@ -93,60 +93,26 @@ class Pipeline:
     @handle_run_errors
     @handle_stop_option
     def execute_from_last_failed_step(self):
-        from synda.config import Config
-
         CONSOLE.print("[blue]Retrying last failed run")
-
         last_failed_step = Step.get_last_failed(self.session)
 
         if last_failed_step is None:
             raise Exception("Can't find any failed step.")
 
-        self.run, input_nodes, remaining_steps = Run.restart_from_step(
-            session=self.session, step=last_failed_step
-        )
-        self.config = Config.model_validate(self.run.config)
-        self.output_saver = self.config.output.get_saver()
-        restarted = True
-        for step_ in remaining_steps:
-            if is_debug_enabled():
-                print(step_)
-
-            executor = step_.get_step_config().get_executor(
-                self.session, self.run, step_
-            )
-
-            if restarted:
-                processed_nodes = [
-                    node for node in input_nodes if node.status == NodeStatus.PROCESSED
-                ]
-                input_nodes = [
-                    node for node in input_nodes if node.status == NodeStatus.PENDING
-                ]
-            else:
-                processed_nodes = []
-
-            input_nodes = executor.execute_and_update_step(
-                input_nodes, processed_nodes, restarted
-            )
-            restarted = False
-
-        self.output_saver.save(input_nodes)
-
-        self.run.update(self.session, RunStatus.FINISHED)
-        CONSOLE.print(f"[green]Run {self.run.id} finished successfully!")
+        self._restart_from_step(last_failed_step)
 
     @handle_run_errors
     @handle_stop_option
     def resume(self, run_id: int):
+        CONSOLE.print(f"[blue]Resuming run {run_id}")
+        resumed_step = Step.get_step_to_resume(session=self.session, run_id=run_id)
+        self._restart_from_step(resumed_step)
+
+    def _restart_from_step(self, step: Step):
         from synda.config import Config
 
-        CONSOLE.print(f"[blue]Resuming run {run_id}")
-
-        resumed_step = Step.get_step_to_resume(session=self.session, run_id=run_id)
-
         self.run, input_nodes, remaining_steps = Run.restart_from_step(
-            session=self.session, step=resumed_step
+            session=self.session, step=step
         )
         self.config = Config.model_validate(self.run.config)
         self.output_saver = self.config.output.get_saver()
