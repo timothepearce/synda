@@ -5,7 +5,7 @@ from rich.console import Console
 from rich.markup import escape
 from sqlmodel import Session
 
-from synda.model.node import NodeStatus
+from synda.model.node import Node, NodeStatus
 from synda.database import engine
 from synda.model.run import Run, RunStatus
 from synda.model.step import Step
@@ -79,20 +79,15 @@ class Pipeline:
         input_nodes = self.input_loader.load(self.session)
 
         for step in self.run.steps:
-            if is_debug_enabled():
-                print(step)
-
+            self._log_debug_info(step)
             executor = step.get_step_config().get_executor(self.session, self.run, step)
             input_nodes = executor.execute_and_update_step(input_nodes, [], False)
 
-        self.output_saver.save(input_nodes)
-
-        self.run.update(self.session, RunStatus.FINISHED)
-        CONSOLE.print(f"[green]Run {self.run.id} finished successfully!")
+        self._finalize_run(input_nodes)
 
     @handle_run_errors
     @handle_stop_option
-    def execute_from_last_failed_step(self):
+    def retry(self):
         CONSOLE.print("[blue]Retrying last failed run")
         last_failed_step = Step.get_last_failed(self.session)
 
@@ -116,31 +111,52 @@ class Pipeline:
         )
         self.config = Config.model_validate(self.run.config)
         self.output_saver = self.config.output.get_saver()
-        restarted = True
-        for step_ in remaining_steps:
-            if is_debug_enabled():
-                print(step_)
 
-            executor = step_.get_step_config().get_executor(
-                self.session, self.run, step_
+        self._execute_remaining_steps(input_nodes, remaining_steps)
+
+        self._finalize_run(input_nodes)
+
+    def _execute_remaining_steps(self, input_nodes, remaining_steps):
+        is_first_remaining_step = True
+
+        for current_step in remaining_steps:
+            self._log_debug_info(current_step)
+            executor = current_step.get_step_config().get_executor(
+                self.session, self.run, current_step
             )
 
-            if restarted:
-                processed_nodes = [
-                    node for node in input_nodes if node.status == NodeStatus.PROCESSED
-                ]
-                input_nodes = [
-                    node for node in input_nodes if node.status == NodeStatus.PENDING
-                ]
-            else:
-                processed_nodes = []
+            nodes_to_process, processed_nodes = self._prepare_nodes(
+                input_nodes, is_first_remaining_step
+            )
 
             input_nodes = executor.execute_and_update_step(
-                input_nodes, processed_nodes, restarted
+                nodes_to_process, processed_nodes, is_first_remaining_step
             )
-            restarted = False
+            is_first_remaining_step = False
 
+        return input_nodes
+
+    @staticmethod
+    def _prepare_nodes(input_nodes, is_first_step):
+        if not is_first_step:
+            return input_nodes, []
+
+        pending_nodes, processed_nodes = [], []
+
+        for node in input_nodes:
+            if node.status == NodeStatus.PENDING:
+                pending_nodes.append(node)
+            elif node.status == NodeStatus.PROCESSED:
+                processed_nodes.append(node)
+
+        return pending_nodes, processed_nodes
+
+    @staticmethod
+    def _log_debug_info(step):
+        if is_debug_enabled():
+            print(step)
+
+    def _finalize_run(self, input_nodes: list[Node]):
         self.output_saver.save(input_nodes)
-
         self.run.update(self.session, RunStatus.FINISHED)
         CONSOLE.print(f"[green]Run {self.run.id} finished successfully!")

@@ -24,7 +24,7 @@ def generate_command(
 ):
     """Run a pipeline with provided configuration."""
     if retry:
-        Pipeline().execute_from_last_failed_step()
+        Pipeline().retry()
     elif run_id is not None:
         Pipeline().resume(run_id=run_id)
     else:

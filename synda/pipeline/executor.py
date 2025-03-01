@@ -25,11 +25,11 @@ class Executor:
         self,
         pending_nodes: list[Node],
         processed_nodes: list[Node],
-        restarted: bool = False,
+        restarted_step: bool = False,
     ) -> list[Node]:
         try:
             self.step_model.set_running(
-                self.session, pending_nodes, restarted=restarted
+                self.session, pending_nodes, restarted=restarted_step
             )
 
             output_nodes = self.execute(pending_nodes, processed_nodes)

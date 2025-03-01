@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from sqlmodel import Column, SQLModel, Field, Relationship, JSON, Session, select
 from sqlalchemy import and_
 
-from synda.model.step_node import StepNode
+from synda.model.step_node import StepNode, StepNodeRelationshipType
 from synda.model.node import Node
 
 if TYPE_CHECKING:
@@ -90,17 +90,8 @@ class Step(SQLModel, table=True):
         self.status = StepStatus.RUNNING
         self.run_at = datetime.now()
 
-        for node in input_nodes:
-            if node.id is None:
-                session.add(node)
-        session.flush()
-
-        for node in input_nodes:
-            step_node = StepNode(
-                step_id=self.id, node_id=node.id, relationship_type="input"
-            )
-            if not restarted:
-                session.add(step_node)
+        if not restarted:
+            self._create_and_map_input_nodes_to_step(session, input_nodes)
 
         session.add(self)
         session.commit()
@@ -112,7 +103,7 @@ class Step(SQLModel, table=True):
         self, session: Session, input_nodes: list[Node], output_nodes: list[Node]
     ) -> "Step":
         self._create_nodes_with_ancestors(session, input_nodes, output_nodes)
-        self._map_nodes_to_step(session, output_nodes)
+        self._map_output_nodes_to_step(session, output_nodes)
 
         self.set_completed(session)
 
@@ -122,7 +113,7 @@ class Step(SQLModel, table=True):
         self, session: Session, input_node: Node, output_node: Node
     ) -> "Step":
         self._create_nodes_with_ancestors(session, [input_node], [output_node])
-        self._map_nodes_to_step(session, [output_node])
+        self._map_output_nodes_to_step(session, [output_node])
 
         return self
 
@@ -154,10 +145,27 @@ class Step(SQLModel, table=True):
         for node in input_nodes:
             node.set_processed(session)
 
-    def _map_nodes_to_step(self, session: Session, output_nodes: list[Node]):
+    def _create_and_map_input_nodes_to_step(
+        self, session: Session, input_nodes: list[Node]
+    ):
+        for node in input_nodes:
+            session.add(node)
+        session.flush()
+
+        for node in input_nodes:
+            step_node = StepNode(
+                step_id=self.id,
+                node_id=node.id,
+                relationship_type=StepNodeRelationshipType.INPUT.value,
+            )
+            session.add(step_node)
+
+    def _map_output_nodes_to_step(self, session: Session, output_nodes: list[Node]):
         for node in output_nodes:
             step_node = StepNode(
-                step_id=self.id, node_id=node.id, relationship_type="output"
+                step_id=self.id,
+                node_id=node.id,
+                relationship_type=StepNodeRelationshipType.OUTPUT.value,
             )
             session.add(step_node)
 
