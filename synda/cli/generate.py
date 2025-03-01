@@ -19,17 +19,14 @@ def generate_command(
         False, "--retry", "-r", help="Run the pipeline from last failed step"
     ),
     run_id: Optional[int] = typer.Option(
-        None,
-        "--resume",
-        "-re",
-        help="Resume the pipeline from a given run id"
+        None, "--resume", "-re", help="Resume the pipeline from a given run id"
     ),
 ):
     """Run a pipeline with provided configuration."""
     if retry:
-        Pipeline.execute_from_last_failed_step()
+        Pipeline().retry()
     elif run_id is not None:
-        Pipeline.resume(run_id=run_id)
+        Pipeline().resume(run_id=run_id)
     else:
         config = Config.load_config(config_file)
         pipeline = Pipeline(config)

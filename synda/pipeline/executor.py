@@ -8,21 +8,37 @@ from synda.model.node import Node
 
 
 class Executor:
-    def __init__(self, session: Session, run: Run, step_model: Step):
+    def __init__(
+        self,
+        session: Session,
+        run: Run,
+        step_model: Step,
+        save_on_completion: bool = True,
+    ):
         self.session = session
         self.run = run
         self.step_model = step_model
         self.config = step_model.get_step_config()
+        self.save_on_completion = save_on_completion
 
     def execute_and_update_step(
-        self, input_nodes: list[Node], restarted: bool = False
+        self,
+        pending_nodes: list[Node],
+        processed_nodes: list[Node],
+        restarted_step: bool = False,
     ) -> list[Node]:
         try:
-            self.step_model.set_running(self.session, input_nodes, restarted=restarted)
+            self.step_model.set_running(
+                self.session, pending_nodes, restarted=restarted_step
+            )
 
-            output_nodes = self.execute(input_nodes)
-
-            self.step_model.set_completed(self.session, input_nodes, output_nodes)
+            output_nodes = self.execute(pending_nodes, processed_nodes)
+            if self.save_on_completion:
+                self.step_model.save_at_execution_end(
+                    self.session, pending_nodes, output_nodes
+                )
+            else:
+                self.step_model.set_completed(session=self.session)
 
             filtered_nodes = [node for node in output_nodes if not node.ablated]
 
@@ -32,5 +48,5 @@ class Executor:
             raise e
 
     @abstractmethod
-    def execute(self, input_data: list[Node]):
+    def execute(self, pending_nodes: list[Node], processed_nodes: list[Node]):
         pass

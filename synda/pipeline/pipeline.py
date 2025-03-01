@@ -1,10 +1,11 @@
 from functools import wraps
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from rich.console import Console
 from rich.markup import escape
 from sqlmodel import Session
 
+from synda.model.node import Node, NodeStatus
 from synda.database import engine
 from synda.model.run import Run, RunStatus
 from synda.model.step import Step
@@ -15,119 +16,147 @@ if TYPE_CHECKING:
 
 CONSOLE = Console()
 
-def handle_run_errors(func):
-    """Decorator to handle run errors gracefully."""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except Exception as e:
-            if hasattr(args[0], 'run') and args[0].run is not None:
-                args[0].run.update(args[0].session, RunStatus.ERRORED)
-            raise e
-    return wrapper
-
-
-def handle_stop_option(func):
-    """Decorator to handle user interruption (Ctrl+C) during execution."""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except KeyboardInterrupt:
-            self = args[0]  # Get the instance
-            if hasattr(self, 'run') and self.run is not None:
-                prompt = f"\nAre you sure you want to stop the run {self.run.id}? [y/N]: "
-                escaped_prompt = escape(prompt)
-
-                user_input = CONSOLE.input(f"[red]{escaped_prompt}[/]").strip().lower()
-
-                if user_input == 'y':
-                    self.run.update(self.session, RunStatus.STOPPED)
-                    CONSOLE.print(f"[blue]Run with id {self.run.id} is stopped.\nTo resume the run, use:")
-                    CONSOLE.print(f"[cyan]synda generate --resume {self.run.id}")
-                    exit(0)
-                else:
-                    Pipeline.resume(run_id=self.run.id)
-    return wrapper
 
 class Pipeline:
-    def __init__(self, config: "Config"):
-        self.config = config
+    def __init__(self, config: Optional["Config"] = None):
         self.session = Session(engine)
-        self.input_loader = config.input.get_loader()
-        self.output_saver = config.output.get_saver()
-        self.pipeline = config.pipeline
-        self.run = None
+        self.config = config
+        self.input_loader = config.input.get_loader() if config else None
+        self.output_saver = config.output.get_saver() if config else None
+        self.pipeline = config.pipeline if config else None
+        self.run = Run.create_with_steps(self.session, config) if config else None
+
+    @staticmethod
+    def handle_run_errors(func):
+        """Decorator to handle run errors gracefully."""
+
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except Exception as e:
+                if self.run is not None:
+                    self.run.update(self.session, RunStatus.ERRORED)
+                raise e
+
+        return wrapper
+
+    @staticmethod
+    def handle_stop_option(func):
+        """Decorator to handle user interruption (Ctrl+C) during execution."""
+
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            try:
+                return func(self, *args, **kwargs)
+            except KeyboardInterrupt:
+                if self.run is not None:
+                    prompt = f"\nAre you sure you want to stop the run {self.run.id}? [y/N]: "
+                    escaped_prompt = escape(prompt)
+
+                    user_input = (
+                        CONSOLE.input(f"[red]{escaped_prompt}[/]").strip().lower()
+                    )
+
+                    if user_input == "y":
+                        self.run.update(self.session, RunStatus.STOPPED)
+                        CONSOLE.print(
+                            f"[blue]Run with id {self.run.id} is stopped.\nTo resume the run, use:"
+                        )
+                        CONSOLE.print(f"[cyan]synda generate --resume {self.run.id}")
+                        exit(0)
+                    else:
+                        self.resume(run_id=self.run.id)
+
+        return wrapper
 
     @handle_run_errors
     @handle_stop_option
     def execute(self):
-        self.run = Run.create_with_steps(self.session, self.config)
+        if self.config is None:
+            raise ValueError("Config can't be None to execute a pipeline")
+
         input_nodes = self.input_loader.load(self.session)
 
         for step in self.run.steps:
-            if is_debug_enabled():
-                print(step)
-
+            self._log_debug_info(step)
             executor = step.get_step_config().get_executor(self.session, self.run, step)
-            input_nodes = executor.execute_and_update_step(input_nodes)
+            input_nodes = executor.execute_and_update_step(input_nodes, [], False)
 
-        self.output_saver.save(input_nodes)
+        self._finalize_run(input_nodes)
 
-        self.run.update(self.session, RunStatus.FINISHED)
-        CONSOLE.print(f"[green]Run {self.run.id} finished successfully!")
-
-    @staticmethod
     @handle_run_errors
-    def execute_from_last_failed_step():
-        from synda.config import Config
+    @handle_stop_option
+    def retry(self):
         CONSOLE.print("[blue]Retrying last failed run")
-
-        session = Session(engine)
-        last_failed_step = Step.get_last_failed(session)
+        last_failed_step = Step.get_last_failed(self.session)
 
         if last_failed_step is None:
             raise Exception("Can't find any failed step.")
 
-        run, input_nodes, remaining_steps = Run.restart_from_step(session=session, step=last_failed_step)
-        config = Config.model_validate(run.config)
-        output_saver = config.output.get_saver()
-        for step in remaining_steps:
-            if is_debug_enabled():
-                print(step)
+        self._restart_from_step(last_failed_step)
 
-            executor = step.get_step_config().get_executor(session, run, step)
-            input_nodes = executor.execute_and_update_step(input_nodes, restarted=True)
+    @handle_run_errors
+    @handle_stop_option
+    def resume(self, run_id: int):
+        CONSOLE.print(f"[blue]Resuming run {run_id}")
+        resumed_step = Step.get_step_to_resume(session=self.session, run_id=run_id)
+        self._restart_from_step(resumed_step)
 
-        output_saver.save(input_nodes)
+    def _restart_from_step(self, step: Step):
+        from synda.config import Config
 
-        run.update(session, RunStatus.FINISHED)
-        print(f"[green]Run {run.id} finished successfully!")
+        self.run, input_nodes, remaining_steps = Run.restart_from_step(
+            session=self.session, step=step
+        )
+        self.config = Config.model_validate(self.run.config)
+        self.output_saver = self.config.output.get_saver()
 
+        self._execute_remaining_steps(input_nodes, remaining_steps)
+
+        self._finalize_run(input_nodes)
+
+    def _execute_remaining_steps(self, input_nodes, remaining_steps):
+        is_first_remaining_step = True
+
+        for current_step in remaining_steps:
+            self._log_debug_info(current_step)
+            executor = current_step.get_step_config().get_executor(
+                self.session, self.run, current_step
+            )
+
+            nodes_to_process, processed_nodes = self._prepare_nodes(
+                input_nodes, is_first_remaining_step
+            )
+
+            input_nodes = executor.execute_and_update_step(
+                nodes_to_process, processed_nodes, is_first_remaining_step
+            )
+            is_first_remaining_step = False
+
+        return input_nodes
 
     @staticmethod
-    @handle_run_errors
-    def resume(run_id: int):
-        from synda.config import Config
-        CONSOLE.print(f"[blue]Resuming run {run_id}")
+    def _prepare_nodes(input_nodes, is_first_step):
+        if not is_first_step:
+            return input_nodes, []
 
-        session = Session(engine)
-        resumed_step = Step.get_step_to_resume(session=session, run_id=run_id)
+        pending_nodes, processed_nodes = [], []
 
-        run, input_nodes, remaining_steps = Run.restart_from_step(session=session, step=resumed_step)
-        config = Config.model_validate(run.config)
-        output_saver = config.output.get_saver()
-        for step_ in remaining_steps:
-            if is_debug_enabled():
-                print(step_)
+        for node in input_nodes:
+            if node.status == NodeStatus.PENDING:
+                pending_nodes.append(node)
+            elif node.status == NodeStatus.PROCESSED:
+                processed_nodes.append(node)
 
-            executor = step_.get_step_config().get_executor(
-                session, run, step_
-            )
-            input_nodes = executor.execute_and_update_step(input_nodes, restarted=True)
+        return pending_nodes, processed_nodes
 
-        output_saver.save(input_nodes)
+    @staticmethod
+    def _log_debug_info(step):
+        if is_debug_enabled():
+            print(step)
 
-        run.update(session, RunStatus.FINISHED)
-        CONSOLE.print(f"[green]Run {run.id} finished successfully!")
+    def _finalize_run(self, input_nodes: list[Node]):
+        self.output_saver.save(input_nodes)
+        self.run.update(self.session, RunStatus.FINISHED)
+        CONSOLE.print(f"[green]Run {self.run.id} finished successfully!")

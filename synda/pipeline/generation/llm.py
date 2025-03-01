@@ -12,22 +12,26 @@ from synda.progress_manager import ProgressManager
 
 class LLM(Executor):
     def __init__(self, session: Session, run: Run, step_model: Step):
-        super().__init__(session, run, step_model)
+        super().__init__(session, run, step_model, save_on_completion=False)
         self.progress = ProgressManager("GENERATION")
         self.provider = Provider.get(self.config.parameters.provider)
         self.model = self.config.parameters.model
 
-    def execute(self, input_data: list[Node]):
+    def execute(self, pending_nodes: list[Node], processed_nodes: list[Node]):
         template = self.config.parameters.template
         occurrences = self.config.parameters.occurrences
         instruction_sets = self.config.parameters.instruction_sets
-        input_data = self._build_node_occurrences(input_data, occurrences)
+        pending_nodes = self._build_node_occurrences(pending_nodes, occurrences)
         prompts = PromptBuilder.build(
-            self.session, template, input_data, instruction_sets=instruction_sets
+            self.session, template, pending_nodes, instruction_sets=instruction_sets
         )
-        result = []
-        with self.progress.task("Generating...", len(input_data)) as advance:
-            for node, prompt in zip(input_data, prompts):
+        result = processed_nodes
+        with self.progress.task(
+            "Generating...",
+            len(pending_nodes) + len(processed_nodes),
+            completed=len(processed_nodes),
+        ) as advance:
+            for node, prompt in zip(pending_nodes, prompts):
                 llm_answer = LLMProvider.call(
                     self.provider.name,
                     self.model,
@@ -36,16 +40,20 @@ class LLM(Executor):
                     url=self.provider.api_url,
                     temperature=self.config.parameters.temperature,
                 )
-                result.append(Node(parent_node_id=node.id, value=llm_answer))
+                result_node = Node(parent_node_id=node.id, value=llm_answer)
+                self.step_model.save_during_execution(self.session, node, result_node)
+                result.append(result_node)
                 advance()
 
         return result
 
     @staticmethod
-    def _build_node_occurrences(input_data: list[Node], occurrences: int) -> list[Node]:
+    def _build_node_occurrences(
+        pending_nodes: list[Node], occurrences: int
+    ) -> list[Node]:
         nodes = []
 
-        for node in input_data:
+        for node in pending_nodes:
             [nodes.append(node) for _ in range(occurrences)]
 
         return nodes

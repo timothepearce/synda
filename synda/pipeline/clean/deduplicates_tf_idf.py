@@ -14,36 +14,44 @@ class DeduplicateTFIDF(Executor):
         super().__init__(session, run, step_model)
         self.progress = ProgressManager("CLEAN")
 
-    def execute(self, input_data: list[Node]) -> list[Node]:
+    def execute(
+        self, pending_nodes: list[Node], processed_nodes: list[Node]
+    ) -> list[Node]:
         strategy = self.config.parameters.strategy
         similarity_threshold = self.config.parameters.similarity_threshold
         keep = self.config.parameters.keep
 
-        with self.progress.task("  Cleaning...", len(input_data)) as advance:
+        with self.progress.task(
+            "  Cleaning...",
+            len(pending_nodes) + len(processed_nodes),
+            completed=len(processed_nodes),
+        ) as advance:
             if strategy == "exact":
-                result_nodes = self._remove_exact_duplicates(input_data, keep, advance)
+                result_nodes = self._remove_exact_duplicates(
+                    pending_nodes, keep, advance
+                )
             elif strategy == "fuzzy":
                 result_nodes = self._remove_fuzzy_duplicates(
-                    input_data, similarity_threshold, keep, advance
+                    pending_nodes, similarity_threshold, keep, advance
                 )
 
         return [Node(parent_node_id=node.id, value=node.value) for node in result_nodes]
 
     @staticmethod
     def _remove_exact_duplicates(
-        input_data: list[Node], keep: str, advance
+        pending_nodes: list[Node], keep: str, advance
     ) -> list[Node]:
         seen_values = set()
         result = []
 
         if keep == "first":
-            for node in input_data:
+            for node in pending_nodes:
                 if node.value not in seen_values:
                     seen_values.add(node.value)
                     result.append(node)
                 advance()
         elif keep == "last":
-            for node in reversed(input_data):
+            for node in reversed(pending_nodes):
                 if node.value not in seen_values:
                     seen_values.add(node.value)
                     result.insert(0, node)
@@ -53,9 +61,9 @@ class DeduplicateTFIDF(Executor):
 
     @staticmethod
     def _remove_fuzzy_duplicates(
-        input_data: list[Node], similarity_threshold: float, keep: str, advance
+        pending_nodes: list[Node], similarity_threshold: float, keep: str, advance
     ) -> list[Node]:
-        node_values = [node.value for node in input_data]
+        node_values = [node.value for node in pending_nodes]
 
         vectorizer = TfidfVectorizer(strip_accents="unicode")
         tfidf_matrix = vectorizer.fit_transform(node_values)
@@ -82,4 +90,4 @@ class DeduplicateTFIDF(Executor):
 
             advance()
 
-        return [input_data[i] for i in sorted(index_node_to_keep)]
+        return [pending_nodes[i] for i in sorted(index_node_to_keep)]

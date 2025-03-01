@@ -16,12 +16,12 @@ class WordPosition(Executor):
         super().__init__(session, run, step_model)
         self.progress = ProgressManager("METADATA")
 
-    def execute(self, input_data: list[Node]):
+    def execute(self, pending_nodes: list[Node], processed_nodes: list[Node]):
         result = []
         matches = self.config.parameters.matches
 
-        with self.progress.task("  Metadata...", len(input_data)) as advance:
-            for node in input_data:
+        with self.progress.task("  Metadata...", len(pending_nodes)) as advance:
+            for node in pending_nodes:
                 metadata = []
                 text = node.value
 

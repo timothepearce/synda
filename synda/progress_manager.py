@@ -34,7 +34,11 @@ class ProgressManager:
         )
 
     @contextmanager
-    def task(self, description: str, total: int, transient: bool = False):
+    def task(
+        self, description: str, total: int, completed: int = 0, transient: bool = False
+    ):
         with self.progress as progress:
-            task_id = progress.add_task(description, total=total, transient=transient)
+            task_id = progress.add_task(
+                description, total=total, transient=transient, completed=completed
+            )
             yield lambda: progress.advance(task_id)
