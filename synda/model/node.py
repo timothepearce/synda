@@ -3,10 +3,11 @@ from typing import TYPE_CHECKING, Union, Any
 from sqlmodel import SQLModel, Field, Relationship, Column, JSON, Session, select
 from sqlalchemy import and_
 
-from synda.model.step_node import StepNode
+from synda.model.step_node import StepNode, StepNodeRelationshipType
 
 if TYPE_CHECKING:
     from synda.model.step import Step
+
 
 class NodeStatus(Enum):
     PENDING = "pending"
@@ -30,7 +31,7 @@ class Node(SQLModel, table=True):
         back_populates="input_nodes",
         link_model=StepNode,
         sa_relationship_kwargs={
-            "primaryjoin": "and_(Node.id == StepNode.node_id, StepNode.relationship_type == 'input')",
+            "primaryjoin": f"and_(Node.id == StepNode.node_id, StepNode.relationship_type == '{StepNodeRelationshipType.INPUT.value}')",  # noqa
             "secondaryjoin": "Step.id == StepNode.step_id",
             "secondary": "step_node",
             "overlaps": "step,node,step_node_links",
@@ -41,7 +42,7 @@ class Node(SQLModel, table=True):
         back_populates="output_nodes",
         link_model=StepNode,
         sa_relationship_kwargs={
-            "primaryjoin": "and_(Node.id == StepNode.node_id, StepNode.relationship_type == 'output')",
+            "primaryjoin": f"and_(Node.id == StepNode.node_id, StepNode.relationship_type == '{StepNodeRelationshipType.OUTPUT.value}')",  # noqa
             "secondaryjoin": "Step.id == StepNode.step_id",
             "secondary": "step_node",
             "overlaps": "input_step,node,step_node_links,step",
@@ -65,12 +66,16 @@ class Node(SQLModel, table=True):
 
     @staticmethod
     def get_input_nodes_from_step(session: Session, step: "Step") -> list["Node"]:
-        input_nodes_for_steps = session.exec(
+        return session.exec(
             select(Node)
             .join(StepNode, Node.id == StepNode.node_id)
-            .where(and_(StepNode.step_id == step.id, StepNode.relationship_type == "input"))
+            .where(
+                and_(
+                    StepNode.step_id == step.id,
+                    StepNode.relationship_type == StepNodeRelationshipType.INPUT.value,
+                )
+            )
         ).fetchall()
-        return input_nodes_for_steps
 
     def is_ablated_text(self) -> str:
         return "yes" if self.ablated else "no"

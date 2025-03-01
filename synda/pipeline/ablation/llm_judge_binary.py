@@ -37,8 +37,8 @@ class LLMJudgeBinary(Executor):
 
         with self.progress.task(
             "  Ablating...",
-                (len(pending_nodes) + len(processed_nodes)) * len(criteria),
-                completed=len(processed_nodes) * len(criteria)
+            (len(pending_nodes) + len(processed_nodes)) * len(criteria),
+            completed=len(processed_nodes) * len(criteria),
         ) as advance_node:
             for node in pending_nodes:
                 judge_answers = []

@@ -14,16 +14,22 @@ class DeduplicateTFIDF(Executor):
         super().__init__(session, run, step_model)
         self.progress = ProgressManager("CLEAN")
 
-    def execute(self, pending_nodes: list[Node], processed_nodes: list[Node]) -> list[Node]:
+    def execute(
+        self, pending_nodes: list[Node], processed_nodes: list[Node]
+    ) -> list[Node]:
         strategy = self.config.parameters.strategy
         similarity_threshold = self.config.parameters.similarity_threshold
         keep = self.config.parameters.keep
 
         with self.progress.task(
-                "  Cleaning...", len(pending_nodes) + len(processed_nodes), completed=len(processed_nodes)
+            "  Cleaning...",
+            len(pending_nodes) + len(processed_nodes),
+            completed=len(processed_nodes),
         ) as advance:
             if strategy == "exact":
-                result_nodes = self._remove_exact_duplicates(pending_nodes, keep, advance)
+                result_nodes = self._remove_exact_duplicates(
+                    pending_nodes, keep, advance
+                )
             elif strategy == "fuzzy":
                 result_nodes = self._remove_fuzzy_duplicates(
                     pending_nodes, similarity_threshold, keep, advance

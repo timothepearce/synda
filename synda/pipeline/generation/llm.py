@@ -1,4 +1,3 @@
-
 from sqlmodel import Session
 
 from synda.model.provider import Provider
@@ -28,7 +27,9 @@ class LLM(Executor):
         )
         result = processed_nodes
         with self.progress.task(
-                "Generating...", len(pending_nodes) + len(processed_nodes), completed=len(processed_nodes)
+            "Generating...",
+            len(pending_nodes) + len(processed_nodes),
+            completed=len(processed_nodes),
         ) as advance:
             for node, prompt in zip(pending_nodes, prompts):
                 llm_answer = LLMProvider.call(
@@ -47,7 +48,9 @@ class LLM(Executor):
         return result
 
     @staticmethod
-    def _build_node_occurrences(pending_nodes: list[Node], occurrences: int) -> list[Node]:
+    def _build_node_occurrences(
+        pending_nodes: list[Node], occurrences: int
+    ) -> list[Node]:
         nodes = []
 
         for node in pending_nodes:

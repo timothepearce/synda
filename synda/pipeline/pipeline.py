@@ -29,6 +29,7 @@ class Pipeline:
     @staticmethod
     def handle_run_errors(func):
         """Decorator to handle run errors gracefully."""
+
         @wraps(func)
         def wrapper(self, *args, **kwargs):
             try:
@@ -37,11 +38,13 @@ class Pipeline:
                 if self.run is not None:
                     self.run.update(self.session, RunStatus.ERRORED)
                 raise e
+
         return wrapper
 
     @staticmethod
     def handle_stop_option(func):
         """Decorator to handle user interruption (Ctrl+C) during execution."""
+
         @wraps(func)
         def wrapper(self, *args, **kwargs):
             try:
@@ -51,15 +54,20 @@ class Pipeline:
                     prompt = f"\nAre you sure you want to stop the run {self.run.id}? [y/N]: "
                     escaped_prompt = escape(prompt)
 
-                    user_input = CONSOLE.input(f"[red]{escaped_prompt}[/]").strip().lower()
+                    user_input = (
+                        CONSOLE.input(f"[red]{escaped_prompt}[/]").strip().lower()
+                    )
 
-                    if user_input == 'y':
+                    if user_input == "y":
                         self.run.update(self.session, RunStatus.STOPPED)
-                        CONSOLE.print(f"[blue]Run with id {self.run.id} is stopped.\nTo resume the run, use:")
+                        CONSOLE.print(
+                            f"[blue]Run with id {self.run.id} is stopped.\nTo resume the run, use:"
+                        )
                         CONSOLE.print(f"[cyan]synda generate --resume {self.run.id}")
                         exit(0)
                     else:
                         self.resume(run_id=self.run.id)
+
         return wrapper
 
     @handle_run_errors
@@ -82,11 +90,11 @@ class Pipeline:
         self.run.update(self.session, RunStatus.FINISHED)
         CONSOLE.print(f"[green]Run {self.run.id} finished successfully!")
 
-
     @handle_run_errors
     @handle_stop_option
     def execute_from_last_failed_step(self):
         from synda.config import Config
+
         CONSOLE.print("[blue]Retrying last failed run")
 
         last_failed_step = Step.get_last_failed(self.session)
@@ -94,7 +102,9 @@ class Pipeline:
         if last_failed_step is None:
             raise Exception("Can't find any failed step.")
 
-        self.run, input_nodes, remaining_steps = Run.restart_from_step(session=self.session, step=last_failed_step)
+        self.run, input_nodes, remaining_steps = Run.restart_from_step(
+            session=self.session, step=last_failed_step
+        )
         self.config = Config.model_validate(self.run.config)
         self.output_saver = self.config.output.get_saver()
         restarted = True
@@ -107,12 +117,18 @@ class Pipeline:
             )
 
             if restarted:
-                processed_nodes = [node for node in input_nodes if node.status == NodeStatus.PROCESSED]
-                input_nodes = [node for node in input_nodes if node.status == NodeStatus.PENDING]
+                processed_nodes = [
+                    node for node in input_nodes if node.status == NodeStatus.PROCESSED
+                ]
+                input_nodes = [
+                    node for node in input_nodes if node.status == NodeStatus.PENDING
+                ]
             else:
                 processed_nodes = []
 
-            input_nodes = executor.execute_and_update_step(input_nodes, processed_nodes, restarted)
+            input_nodes = executor.execute_and_update_step(
+                input_nodes, processed_nodes, restarted
+            )
             restarted = False
 
         self.output_saver.save(input_nodes)
@@ -120,16 +136,18 @@ class Pipeline:
         self.run.update(self.session, RunStatus.FINISHED)
         CONSOLE.print(f"[green]Run {self.run.id} finished successfully!")
 
-
     @handle_run_errors
     @handle_stop_option
     def resume(self, run_id: int):
         from synda.config import Config
+
         CONSOLE.print(f"[blue]Resuming run {run_id}")
 
         resumed_step = Step.get_step_to_resume(session=self.session, run_id=run_id)
 
-        self.run, input_nodes, remaining_steps = Run.restart_from_step(session=self.session, step=resumed_step)
+        self.run, input_nodes, remaining_steps = Run.restart_from_step(
+            session=self.session, step=resumed_step
+        )
         self.config = Config.model_validate(self.run.config)
         self.output_saver = self.config.output.get_saver()
         restarted = True
@@ -142,12 +160,18 @@ class Pipeline:
             )
 
             if restarted:
-                processed_nodes = [node for node in input_nodes if node.status == NodeStatus.PROCESSED]
-                input_nodes = [node for node in input_nodes if node.status == NodeStatus.PENDING]
+                processed_nodes = [
+                    node for node in input_nodes if node.status == NodeStatus.PROCESSED
+                ]
+                input_nodes = [
+                    node for node in input_nodes if node.status == NodeStatus.PENDING
+                ]
             else:
                 processed_nodes = []
 
-            input_nodes = executor.execute_and_update_step(input_nodes, processed_nodes, restarted)
+            input_nodes = executor.execute_and_update_step(
+                input_nodes, processed_nodes, restarted
+            )
             restarted = False
 
         self.output_saver.save(input_nodes)

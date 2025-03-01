@@ -71,9 +71,9 @@ class Step(SQLModel, table=True):
     @staticmethod
     def get_step_to_resume(session: Session, run_id: int) -> "Step":
         return session.exec(
-            select(Step).where(
-                and_(Step.status != StepStatus.COMPLETED, Step.run_id == run_id)
-            ).order_by(Step.position.asc())
+            select(Step)
+            .where(and_(Step.status != StepStatus.COMPLETED, Step.run_id == run_id))
+            .order_by(Step.position.asc())  # noqa
         ).first()
 
     def set_status(self, session: Session, status: str) -> "Step":
@@ -118,7 +118,9 @@ class Step(SQLModel, table=True):
 
         return self
 
-    def save_during_execution(self, session: Session, input_node: Node, output_node: Node) -> "Step":
+    def save_during_execution(
+        self, session: Session, input_node: Node, output_node: Node
+    ) -> "Step":
         self._create_nodes_with_ancestors(session, [input_node], [output_node])
         self._map_nodes_to_step(session, [output_node])
 
