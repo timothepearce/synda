@@ -31,4 +31,6 @@ class LLMProvider:
     def _resolve_provider(provider: str):
         if provider == "ollama":
             return "ollama_chat"
+        elif provider == "openrouter":
+            return "openrouter"
         return provider
