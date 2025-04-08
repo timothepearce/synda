@@ -50,8 +50,8 @@ pipeline:
   - type: generation
     method: llm
     parameters:
-      provider: openai
-      model: gpt-4o-mini
+      provider: openai  # You can also use 'openrouter' here
+      model: gpt-4o-mini  # For OpenRouter, use format like 'openai/gpt-3.5-turbo'
       template: |
         Ask a question regarding the sentence about the content.
         content: {chunk_faq}
@@ -90,7 +90,11 @@ output:
 2. Add a model provider:
 
 ```bash
+# For OpenAI
 synda provider add openai --api-key [YOUR_API_KEY]
+
+# For OpenRouter
+synda provider add openrouter --api-key [YOUR_OPENROUTER_API_KEY]
 ```
 
 3. Generate some synthetic data:
@@ -136,6 +140,7 @@ The following features are planned for future releases.
 - [x] Allow injecting params from distant step into prompt
 - [x] Add Ollama with structured generation output
 - [x] Retry a failed run
+- [x] Add OpenRouter support
 - [ ] Add asynchronous behaviour for any CLI
 - [ ] Add vLLM with structured generation output
 - [ ] Batch processing logic (via param.) for LLMs steps
