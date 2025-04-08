@@ -1,0 +1,101 @@
+input:
+  type: csv
+  properties:
+    path: input.csv
+    target_column: content
+    separator: "\t"
+
+pipeline:
+  # Input step (replaces the input section)
+  - type: input
+    method: csv
+    name: load_data
+    parameters:
+      path: input.csv
+      target_column: content
+      separator: "\t"
+
+  # Split the text into chunks
+  - type: split
+    method: chunk
+    name: chunk_text
+    parameters:
+      size: 500
+      overlap: 20
+
+  # Split chunks into sentences
+  - type: split
+    method: separator
+    name: sentence_split
+    parameters:
+      separator: "."
+      keep_separator: true
+
+  # Generate content using LLM with batch processing
+  - type: generation
+    method: llm
+    name: generate_questions
+    parameters:
+      provider: openai
+      model: gpt-3.5-turbo
+      batch_size: 10
+      max_tokens: 256
+      temperature: 0.7
+      use_async: true
+      template: |
+        Generate a question based on the following text:
+        
+        Text: {chunk_text}
+        Sentence: {sentence_split}
+        
+        Question:
+
+  # Custom script processing
+  - type: custom
+    method: script
+    name: custom_processing
+    parameters:
+      script_path: "/path/to/custom_script.py"
+      function_name: "process_text"
+      script_params:
+        min_length: 10
+        max_length: 100
+        language: "english"
+
+  # Clean the data by removing duplicates
+  - type: clean
+    method: deduplicate-tf-idf
+    name: remove_duplicates
+    parameters:
+      strategy: fuzzy
+      similarity_threshold: 0.85
+      keep: first
+
+  # Ablation step with async processing
+  - type: ablation
+    method: llm-judge-binary
+    name: quality_filter
+    parameters:
+      provider: openai
+      model: gpt-3.5-turbo
+      batch_size: 5
+      use_async: true
+      consensus: majority
+      criteria:
+        - Is the question grammatically correct?
+        - Is the question relevant to the text?
+        - Can the question be answered from the text?
+
+  # Output step (replaces the output section)
+  - type: output
+    method: csv
+    name: save_results
+    parameters:
+      path: output.csv
+      separator: "\t"
+
+output:
+  type: csv
+  properties:
+    path: output.csv
+    separator: "\t"
