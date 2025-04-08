@@ -1,0 +1,19 @@
+[uv]
+# Use the latest version of packages by default
+latest = true
+
+# Use a virtual environment
+venv = true
+
+# Exclude these packages from being upgraded
+exclude = []
+
+[uv.pip]
+# Use the latest version of pip
+pip = "latest"
+
+# Use the latest version of setuptools
+setuptools = "latest"
+
+# Use the latest version of wheel
+wheel = "latest"

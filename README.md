@@ -14,10 +14,44 @@ It is opinionated and fast by design, with plans to become highly configurable i
 
 Synda requires Python 3.10 or higher.
 
+### Using pipx
+
 You can install Synda using pipx:
 
 ```bash
 pipx install synda
+```
+
+### Using uv
+
+You can also install Synda using uv:
+
+```bash
+# Install uv if you don't have it
+pip install uv
+
+# Install Synda
+uv pip install synda
+```
+
+### Development Installation
+
+For development, clone the repository and install using uv:
+
+```bash
+# Clone the repository
+git clone https://github.com/timothepearce/synda.git
+cd synda
+
+# Create a virtual environment and install dependencies
+make setup
+make dev
+
+# Or manually:
+uv venv .venv
+source .venv/bin/activate
+uv pip install -r requirements-dev.txt
+uv pip install -e .
 ```
 
 ## Usage

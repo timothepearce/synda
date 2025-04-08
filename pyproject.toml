@@ -1,41 +1,32 @@
-[tool.poetry]
+[project]
 name = "synda"
 version = "0.7.0"
 description = "A CLI for generating synthetic data"
-authors = ["Timothé Pearce <timothe.pearce@gmail.com>"]
-license = "Apache 2.0"
+authors = [
+    {name = "Timothé Pearce", email = "timothe.pearce@gmail.com"}
+]
+license = {text = "Apache 2.0"}
 readme = "README.md"
 keywords = ["synthetic data", "pipeline", "llm"]
+requires-python = ">=3.10"
+dependencies = [
+    # Dependencies are now managed in requirements.txt
+]
+
+[project.urls]
 repository = "https://github.com/timothepearce/synda"
 documentation = "https://github.com/timothepearce/synda"
-packages = [{include = "synda"}]
-
-[tool.poetry.dependencies]
-python = "^3.10"
-pyyaml = "^6.0.2"
-pydantic = "^2.10.6"
-pandas = "^2.2.3"
-python-dotenv = "^1.0.1"
-litellm = "1.55.12"
-rich = "^13.9.4"
-sqlmodel = "^0.0.22"
-typer = {extras = ["all"], version = "^0.15.1"}
-scikit-learn = "^1.6.1"
-openpyxl = "^3.1.5"
-asyncio = "^3.4.3"
-aiohttp = "^3.9.5"
-vllm = "^0.4.0"
-ray = {extras = ["default"], version = "^2.10.0"}
-diskcache = "^5.6.3"
-fastapi = "^0.110.0"
-uvicorn = "^0.29.0"
-
-[tool.poetry.group.dev.dependencies]
-black = "^24.10.0"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
-[tool.poetry.scripts]
+[project.scripts]
 synda = "synda.cli.app:main"
+
+[tool.setuptools]
+packages = ["synda"]
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
