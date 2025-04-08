@@ -22,6 +22,13 @@ sqlmodel = "^0.0.22"
 typer = {extras = ["all"], version = "^0.15.1"}
 scikit-learn = "^1.6.1"
 openpyxl = "^3.1.5"
+asyncio = "^3.4.3"
+aiohttp = "^3.9.5"
+vllm = "^0.4.0"
+ray = {extras = ["default"], version = "^2.10.0"}
+diskcache = "^5.6.3"
+fastapi = "^0.110.0"
+uvicorn = "^0.29.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.10.0"

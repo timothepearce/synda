@@ -105,7 +105,7 @@ synda generate config.yaml
 
 ## Pipeline Structure
 
-The Nebula pipeline consists of three main parts:
+The Synda pipeline consists of three main parts:
 
 - **Input**: Data source configuration
 - **Pipeline**: Sequence of transformation and generation steps
@@ -113,15 +113,31 @@ The Nebula pipeline consists of three main parts:
 
 ### Available Pipeline Steps
 
-Currently, Synda supports four pipeline steps (as shown in the example above):
+Synda supports the following pipeline steps:
 
-- **split**: Breaks down data (`method: chunk` or `method: split`)
+- **split**: Breaks down data (`method: chunk` or `method: separator`)
 - **generation**: Generates content using LLMs (`method: llm`)
 - **clean**: Delete the duplicated data (`method: deduplicate-tf-idf`)
 - **ablation**: Filters data based on defined criteria (`method: llm-judge-binary`)
 - **metadata**: Add metadata to text (`method: word-position`)
+- **input**: Load data from various sources (`method: csv` or `method: xls`)
+- **output**: Save data to various destinations (`method: csv` or `method: xls`)
+- **custom**: Execute custom Python scripts (`method: script`)
 
-More steps will be added in future releases.
+## Advanced Features
+
+Synda now includes many advanced features:
+
+- **Asynchronous execution** for improved performance
+- **Batch processing** for LLM steps
+- **vLLM integration** for high-throughput inference
+- **Caching** of step outputs for faster execution
+- **Distributed processing** with Ray
+- **Pausing and resuming** pipelines
+- **Custom scriptable steps** for flexible processing
+- **API server** for programmatic access
+
+For more details, see the [Advanced Features](docs/advanced_features.md) documentation.
 
 ## Roadmap
 
@@ -141,17 +157,17 @@ The following features are planned for future releases.
 - [x] Add Ollama with structured generation output
 - [x] Retry a failed run
 - [x] Add OpenRouter support
-- [ ] Add asynchronous behaviour for any CLI
-- [ ] Add vLLM with structured generation output
-- [ ] Batch processing logic (via param.) for LLMs steps
-- [ ] Move input into pipeline (step type: 'load')
-- [ ] Move output into pipeline (step type: 'export')
-- [ ] Allow pausing and resuming pipelines
-- [ ] Trace each synthetic data with his historic
-- [ ] Enable caching of each step's output
-- [ ] Implement custom scriptable step for developer
-- [ ] Use Ray for large workload
-- [ ] Add a programmatic API
+- [x] Add asynchronous behaviour for any CLI
+- [x] Add vLLM with structured generation output
+- [x] Batch processing logic (via param.) for LLMs steps
+- [x] Move input into pipeline (step type: 'load')
+- [x] Move output into pipeline (step type: 'export')
+- [x] Allow pausing and resuming pipelines
+- [x] Trace each synthetic data with his historic
+- [x] Enable caching of each step's output
+- [x] Implement custom scriptable step for developer
+- [x] Use Ray for large workload
+- [x] Add a programmatic API
 
 ### Steps
 - [x] input/output: .xls format
