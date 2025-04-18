@@ -1,6 +1,7 @@
 import random
 import re
 from enum import Enum
+from itertools import product
 
 from sqlmodel import Session
 
@@ -20,10 +21,11 @@ class PromptBuilder:
         template: str,
         input_data: list[Node],
         instruction_sets: dict[str, list[str]] | None = None,
-    ) -> list[str] | str:
+        instruction_mode: str = "random"
+    ) -> list[str]:
         prompts_with_special_variables = (
             PromptBuilder._build_prompts_with_special_variables(
-                template, input_data, instruction_sets
+                template, input_data, instruction_sets, instruction_mode
             )
         )
         prompts_with_template_variables = (
@@ -31,18 +33,14 @@ class PromptBuilder:
                 session, prompts_with_special_variables, input_data
             )
         )
-
-        return (
-            prompts_with_template_variables
-            if len(prompts_with_template_variables) > 1
-            else prompts_with_template_variables[0]
-        )
+        return prompts_with_template_variables
 
     @staticmethod
     def _build_prompts_with_special_variables(
         template: str,
         input_data: list[Node],
         instruction_sets: dict[str, list[str]] | None,
+        instruction_mode: str
     ) -> list[str]:
         special_variables = PromptBuilder._extract_special_variables(template)
 
@@ -52,16 +50,16 @@ class PromptBuilder:
         prompts_with_special_variables = []
 
         for _ in input_data:
-            variable_value = {}
+            instructions_list = PromptBuilder._build_instructions(instruction_sets, instruction_mode)
+            
+            for instructions in instructions_list:
+                variable_value = {}
+                for variable_name in special_variables:
+                    if variable_name == SpecialVariable.INSTRUCTIONS.value:
+                        variable_value[SpecialVariable.INSTRUCTIONS.value] = instructions
 
-            for variable_name in special_variables:
-                if variable_name == SpecialVariable.INSTRUCTIONS.value:
-                    variable_value[SpecialVariable.INSTRUCTIONS.value] = (
-                        PromptBuilder._build_instructions(instruction_sets)
-                    )
-
-            formatted_prompt = template.format(**variable_value)
-            prompts_with_special_variables.append(formatted_prompt)
+                formatted_prompt = template.format(**variable_value)
+                prompts_with_special_variables.append(formatted_prompt)
 
         return prompts_with_special_variables
 
@@ -71,31 +69,26 @@ class PromptBuilder:
         prompts_with_special_variables: list[str],
         input_data: list[Node],
     ) -> list[str]:
-        template_variables = set()
-        for prompt in prompts_with_special_variables:
-            template_variables.update(PromptBuilder._extract_template_variables(prompt))
-
-        if len(template_variables) == 0:
-            return prompts_with_special_variables
-
         prompts_with_template_variables = []
+        
+        for prompt in prompts_with_special_variables:
+            template_variables = PromptBuilder._extract_template_variables(prompt)
+            
+            if len(template_variables) == 0:
+                prompts_with_template_variables.append(prompt)
+                continue
+                
+            for node in input_data:
+                variable_value = {}
+                for variable_name in template_variables:
+                    if variable_name not in node.ancestors:
+                        continue
+                    parent_node_id = node.ancestors[variable_name]
+                    parent_node = Node.get(session, parent_node_id)
+                    variable_value[variable_name] = parent_node.value
 
-        parent_nodes = PromptBuilder._get_parent_nodes(
-            session, template_variables, input_data
-        )
-
-        for node, prompt in zip(input_data, prompts_with_special_variables):
-            variable_value = {}
-
-            for variable_name in template_variables:
-                parent_node_id = node.ancestors[variable_name]
-                parent_node = next(
-                    node for node in parent_nodes if node.id == parent_node_id
-                )
-                variable_value[variable_name] = parent_node.value
-
-            formatted_prompt = prompt.format(**variable_value)
-            prompts_with_template_variables.append(formatted_prompt)
+                formatted_prompt = prompt.format(**variable_value)
+                prompts_with_template_variables.append(formatted_prompt)
 
         return prompts_with_template_variables
 
@@ -122,17 +115,24 @@ class PromptBuilder:
         return rf"{{(?!{special_vars})([^}}]+)}}"
 
     @staticmethod
-    def _build_instructions(instruction_sets: dict[str, list[str]] | None) -> str:
+    def _build_instructions(instruction_sets: dict[str, list[str]] | None, mode: str = "random") -> list[str]:
         if instruction_sets is None:
             raise Exception("`instruction_sets` is missing from parameters.")
-
-        instructions_set = []
-
-        for category, instructions in instruction_sets.items():
-            selected_instruction = random.choice(instructions)
-            instructions_set.append("- " + selected_instruction)
-
-        return "\n".join(instructions_set)
+        if mode == "random":
+            instructions_set = []
+            for category, instructions in instruction_sets.items():
+                selected_instruction = random.choice(instructions)
+                instructions_set.append("- " + selected_instruction)
+            return ["\n".join(instructions_set)]
+        
+        elif mode == "all_combinations":
+            categories = instruction_sets.values()
+            all_combinations = list(product(*categories))
+            return ["\n".join("- " + instruction for instruction in combination) 
+                    for combination in all_combinations]
+        
+        else:
+            raise ValueError(f"Unknown instruction mode: {mode}")
 
     @staticmethod
     def _get_parent_nodes(
