@@ -14,11 +14,11 @@ class AblationParameters(BaseModel):
     temperature: float | None = 1.0
     consensus: Literal["all", "any", "majority"]
     criteria: list[str]
-
+    batch_size: int | None = 40
 
 class Ablation(Step):
     type: str = "ablation"
-    method: Literal["llm-judge-binary"]
+    method: Literal["llm-judge-binary", "async-llm-judge-binary"]
     parameters: AblationParameters
 
     def get_executor(self, session: Session, run: Run, step_model: StepModel):
@@ -26,3 +26,7 @@ class Ablation(Step):
             from synda.pipeline.ablation import LLMJudgeBinary
 
             return LLMJudgeBinary(session, run, step_model)
+        elif self.method == "async-llm-judge-binary":
+            from synda.pipeline.ablation import AsyncLLMJudgeBinary
+
+            return AsyncLLMJudgeBinary(session, run, step_model)
