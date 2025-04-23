@@ -26,5 +26,8 @@ class Generation(Step):
     parameters: GenerationParameters
 
     def get_executor(self, session: Session, run: Run, step_model: StepModel):
-        from synda.pipeline.generation import LLM
-        return LLM(session, run, step_model)
+        if self.method == "llm":
+            from synda.pipeline.generation import LLM
+            return LLM(session, run, step_model)
+        else:
+            raise ValueError(f"Method {self.method} not supported")
