@@ -1,1 +1,2 @@
 from .deduplicates_tf_idf import DeduplicateTFIDF
+from .deduplicates_embed import DeduplicateEmbed

@@ -187,9 +187,9 @@ class Step(SQLModel, table=True):
                 return Ablation.model_validate(self.step_config)
 
             case "clean":
-                from synda.config.clean import Clean
+                from synda.config.clean import deduplicate_adapter
 
-                return Clean.model_validate(self.step_config)
+                return deduplicate_adapter.validate_python(self.step_config)
 
             case "metadata":
                 from synda.config.metadata import Metadata
