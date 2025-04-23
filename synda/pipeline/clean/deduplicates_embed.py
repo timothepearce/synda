@@ -8,7 +8,7 @@ from synda.progress_manager import ProgressManager
 from synda.model.step import Step
 from synda.utils.llm_provider import LLMProvider
 from synda.model.provider import Provider
-from sklearn.metrics.pairwise import euclidean_distances
+from sklearn.metrics.pairwise import cosine_similarity
 
 class DeduplicateEmbed(Executor):
     def __init__(self, session: Session, run: Run, step_model: Step):
@@ -37,13 +37,14 @@ class DeduplicateEmbed(Executor):
         pending_nodes: List[Node], embeddings: List[list], similarity_threshold: float
     ) -> List[Node]:
         keep_indices = set(range(len(pending_nodes)))
+        similarity_matrix = cosine_similarity(embeddings)
         for i in range(len(pending_nodes)):
             if i not in keep_indices:
                 continue
             for j in range(i + 1, len(pending_nodes)):
                 if j not in keep_indices:
                     continue
-                dist = euclidean_distances([embeddings[i]], [embeddings[j]])[0][0]
-                if dist < similarity_threshold:
+                sim = similarity_matrix[i, j]
+                if sim > similarity_threshold:
                     keep_indices.discard(j)
         return [pending_nodes[i] for i in sorted(keep_indices)] 
