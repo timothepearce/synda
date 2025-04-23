@@ -14,6 +14,7 @@ class AblationParameters(BaseModel):
     temperature: float | None = 1.0
     consensus: Literal["all", "any", "majority"]
     criteria: list[str]
+    batch: bool = False
     batch_size: int | None = 40
 
 class Ablation(Step):
