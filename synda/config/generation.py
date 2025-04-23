@@ -16,18 +16,15 @@ class GenerationParameters(BaseModel):
     instruction_mode: str = "random"
     occurrences: int = 1
     template: str
+    batch: bool = False
     batch_size: int | None = 40
 
 
 class Generation(Step):
     type: str = "generation"
-    method: Literal["llm", "async-llm"]
+    method: Literal["llm"]
     parameters: GenerationParameters
 
     def get_executor(self, session: Session, run: Run, step_model: StepModel):
-        if self.method == "llm":
-            from synda.pipeline.generation import LLM
-            return LLM(session, run, step_model)
-        elif self.method == "async-llm":
-            from synda.pipeline.generation.async_llm import AsyncLLM
-            return AsyncLLM(session, run, step_model)
+        from synda.pipeline.generation import LLM
+        return LLM(session, run, step_model)
