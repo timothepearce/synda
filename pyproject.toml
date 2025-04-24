@@ -11,7 +11,7 @@ documentation = "https://github.com/timothepearce/synda"
 packages = [{include = "synda"}]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.10, <3.13"
 pyyaml = "^6.0.2"
 pydantic = "^2.10.6"
 pandas = "^2.2.3"
@@ -22,6 +22,7 @@ sqlmodel = "^0.0.22"
 typer = {extras = ["all"], version = "^0.15.1"}
 scikit-learn = "^1.6.1"
 openpyxl = "^3.1.5"
+vllm = "^0.8.4"
 pypdf2 = "^3.0.1"
 
 [tool.poetry.group.dev.dependencies]
