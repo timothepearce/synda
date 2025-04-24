@@ -25,6 +25,7 @@ pipeline:
       provider: vllm
       model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
       occurrences: 1
+      batch_size: 2
       template: |
         Ask a question regarding the sentence about the content.
         content: {chunk_faq}
@@ -46,7 +47,7 @@ pipeline:
   - type: ablation
     method: llm-judge-binary
     parameters:
-      provider: vllm
+      provider: ollama
       model: llama3.2
       consensus: all
       criteria:
