@@ -33,119 +33,127 @@ class LLMJudgeBinary(Executor):
         self.batch = self.config.parameters.batch
         self.batch_size = self.config.parameters.batch_size
 
-    # @todo build criteria prompts in a single call
     def execute(self, pending_nodes: list[Node], processed_nodes: list[Node]):
         criteria = self.config.parameters.criteria
         result = processed_nodes or []
 
         if not self.batch or self.batch_size is None:
-            with self.progress.task(
-                "  Ablating...",
-                (len(pending_nodes) + len(processed_nodes)) * len(criteria),
-                completed=len(processed_nodes) * len(criteria),
-            ) as advance_node:
-                for node in pending_nodes:
-                    judge_answers = []
-                    for criterion in criteria:
-                        criterion_prompt = PromptBuilder.build(
-                            self.session, criterion, [node]
-                        )
-                        prompt = self._build_binary_judge_prompt(
-                            node.value, criterion_prompt
-                        )
-                        judge_answer = LLMProvider.call(
-                            self.provider.name,
-                            self.model,
-                            self.provider.api_key,
-                            prompt,
-                            LLMJudgeCriterionBinaryAnswer,
-                            url=self.provider.api_url,
-                            temperature=self.config.parameters.temperature,
-                        )
-                        try:
-                            judge_answer = LLMJudgeCriterionBinaryAnswer(
-                                **json.loads(judge_answer)
-                            )
-                        except Exception as e:
-                            print(f"Model response format is malformed: {e}")
-                            judge_answer = LLMJudgeCriterionBinaryAnswer(answer="NO")
-                        judge_answers.append(judge_answer)
-                        advance_node()
-
-                    ablated = not self._check_consensus(judge_answers)
-                    result_node = Node(
-                        parent_node_id=node.id, value=node.value, ablated=ablated
-                    )
-                    self.step_model.save_during_execution(self.session, node, result_node)
-                    result.append(result_node)
-
-                if is_debug_enabled():
-                    print(f"Answer: {node.value}")
-                    print(f"Criteria: {str(criteria)}")
-                    print(f"Consensus: {self.config.parameters.consensus}")
-                    print(f"Judge answers: {judge_answers}")
-                    print(f"Ablated: {result_node.is_ablated_text()}\n")
+            result = self._execute_sequential(pending_nodes, processed_nodes, criteria)
         else:
-            # Mode batch
-            print(f"Batch size: {self.batch_size}")
-            async def judge_node(node):
-                judge_answers = []
-                for criterion in criteria:
-                    criterion_prompt = PromptBuilder.build(
-                        self.session, criterion, [node]
-                    )
-                    prompt = self._build_binary_judge_prompt(
-                        node.value, criterion_prompt
-                    )
-                    loop = asyncio.get_event_loop()
-                    judge_answer_str = await loop.run_in_executor(
-                        None,
-                        lambda: LLMProvider.call(
-                            self.provider.name,
-                            self.model,
-                            self.provider.api_key,
-                            prompt,
-                            LLMJudgeCriterionBinaryAnswer,
-                            url=self.provider.api_url,
-                            temperature=self.config.parameters.temperature,
-                        ),
-                    )
-                    try:
-                        judge_answer = LLMJudgeCriterionBinaryAnswer(
-                            **json.loads(judge_answer_str)
-                        )
-                    except Exception as e:
-                        print(f"Model response format is malformed: {e}")
-                        judge_answer = LLMJudgeCriterionBinaryAnswer(answer="NO")
-                    judge_answers.append(judge_answer)
-                ablated = not self._check_consensus(judge_answers)
-                result_node = Node(
-                    parent_node_id=node.id, value=node.value, ablated=ablated
-                )
-                self.step_model.save_during_execution(self.session, node, result_node)
-                if is_debug_enabled():
-                    print(f"\nProcessing node {node.id}:")
-                    print(f"Answer: {node.value}")
-                    print(f"Criteria: {str(criteria)}")
-                    print(f"Consensus: {self.config.parameters.consensus}")
-                    print(f"Judge answers: {judge_answers}")
-                    print(f"Ablated: {result_node.is_ablated_text()}\n")
-                return result_node
-
-            num_batches = (len(pending_nodes) + self.batch_size - 1) // self.batch_size
-            with self.progress.task(
-                "  Async Ablating...",
-                num_batches,
-                completed=0,
-            ) as advance_node:
-                loop = asyncio.get_event_loop()
-                for i in range(0, len(pending_nodes), self.batch_size):
-                    batch_nodes = pending_nodes[i:i + self.batch_size]
-                    tasks = [judge_node(node) for node in batch_nodes]
-                    result_nodes = loop.run_until_complete(asyncio.gather(*tasks))
-                    result.extend(result_nodes)
-                    advance_node()
+            result = self._execute_batch(pending_nodes, processed_nodes, criteria)
+        
         return result
+
+    def _execute_sequential(self, pending_nodes: list[Node], processed_nodes: list[Node], criteria: list[str]) -> list[Node]:
+        result = processed_nodes or []
+        
+        with self.progress.task(
+            "  Ablating...",
+            (len(pending_nodes) + len(processed_nodes)) * len(criteria),
+            completed=len(processed_nodes) * len(criteria),
+        ) as advance_node:
+            for node in pending_nodes:
+                judge_answers = self._evaluate_node_criteria(node, criteria, advance_node)
+                result_node = self._create_result_node(node, judge_answers)
+                result.append(result_node)
+                
+                self._log_debug_info(node, criteria, judge_answers, result_node)
+                
+        return result
+
+    def _execute_batch(self, pending_nodes: list[Node], processed_nodes: list[Node], criteria: list[str]) -> list[Node]:
+        result = processed_nodes or []
+        num_batches = (len(pending_nodes) + self.batch_size - 1) // self.batch_size
+        with self.progress.task(
+            "  Ablating...",
+            num_batches,
+            completed=0,
+        ) as advance_node:
+            loop = asyncio.get_event_loop()
+            for i in range(0, len(pending_nodes), self.batch_size):
+                batch_nodes = pending_nodes[i:i + self.batch_size]
+                tasks = [self._judge_node_async(node, criteria) for node in batch_nodes]
+                result_nodes = loop.run_until_complete(asyncio.gather(*tasks))
+                result.extend(result_nodes)
+                advance_node()
+                
+        return result
+
+    def _evaluate_node_criteria(self, node: Node, criteria: list[str], advance_callback=None) -> list[LLMJudgeCriterionBinaryAnswer]:
+        judge_answers = []
+        for criterion in criteria:
+            criterion_prompt = PromptBuilder.build(self.session, criterion, [node])
+            prompt = self._build_binary_judge_prompt(node.value, criterion_prompt)
+            
+            judge_answer = LLMProvider.call(
+                self.provider.name,
+                self.model,
+                self.provider.api_key,
+                prompt,
+                LLMJudgeCriterionBinaryAnswer,
+                url=self.provider.api_url,
+                temperature=self.config.parameters.temperature,
+            )
+            
+            judge_answer = self._parse_judge_answer(judge_answer)
+            judge_answers.append(judge_answer)
+            
+            if advance_callback:
+                advance_callback()
+                
+        return judge_answers
+
+    async def _judge_node_async(self, node: Node, criteria: list[str]) -> Node:
+        judge_answers = []
+        for criterion in criteria:
+            criterion_prompt = PromptBuilder.build(self.session, criterion, [node])
+            prompt = self._build_binary_judge_prompt(node.value, criterion_prompt)
+            
+            loop = asyncio.get_event_loop()
+            judge_answer_str = await loop.run_in_executor(
+                None,
+                lambda: LLMProvider.call(
+                    self.provider.name,
+                    self.model,
+                    self.provider.api_key,
+                    prompt,
+                    LLMJudgeCriterionBinaryAnswer,
+                    url=self.provider.api_url,
+                    temperature=self.config.parameters.temperature,
+                ),
+            )
+            
+            judge_answer = self._parse_judge_answer(judge_answer_str)
+            judge_answers.append(judge_answer)
+            
+        result_node = self._create_result_node(node, judge_answers)
+        self._log_debug_info(node, criteria, judge_answers, result_node)
+        
+        return result_node
+
+    def _create_result_node(self, node: Node, judge_answers: list[LLMJudgeCriterionBinaryAnswer]) -> Node:
+        ablated = not self._check_consensus(judge_answers)
+        result_node = Node(
+            parent_node_id=node.id, value=node.value, ablated=ablated
+        )
+        self.step_model.save_during_execution(self.session, node, result_node)
+        return result_node
+
+    def _parse_judge_answer(self, judge_answer_str: str) -> LLMJudgeCriterionBinaryAnswer:
+        try:
+            return LLMJudgeCriterionBinaryAnswer(**json.loads(judge_answer_str))
+        except Exception as e:
+            print(f"Model response format is malformed: {e}")
+            return LLMJudgeCriterionBinaryAnswer(answer="NO")
+
+    def _log_debug_info(self, node: Node, criteria: list[str], judge_answers: list[LLMJudgeCriterionBinaryAnswer], result_node: Node) -> None:
+        if is_debug_enabled():
+            print(f"\nProcessing node {node.id}:")
+            print(f"Answer: {node.value}")
+            print(f"Criteria: {str(criteria)}")
+            print(f"Consensus: {self.config.parameters.consensus}")
+            print(f"Judge answers: {judge_answers}")
+            print(f"Ablated: {result_node.is_ablated_text()}\n")
 
     def _check_consensus(
         self, judge_answers: list[LLMJudgeCriterionBinaryAnswer]
