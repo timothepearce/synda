@@ -13,8 +13,11 @@ class GenerationParameters(BaseModel):
     model: str = "gpt-4o-mini"
     temperature: float | None = 1.0
     instruction_sets: dict[str, list[str]] | None = None
+    instruction_mode: str = "random"
     occurrences: int = 1
     template: str
+    batch: bool = False
+    batch_size: int | None = 40
 
 
 class Generation(Step):
@@ -25,5 +28,6 @@ class Generation(Step):
     def get_executor(self, session: Session, run: Run, step_model: StepModel):
         if self.method == "llm":
             from synda.pipeline.generation import LLM
-
             return LLM(session, run, step_model)
+        else:
+            raise ValueError(f"Method {self.method} not supported")
