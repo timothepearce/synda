@@ -16,7 +16,7 @@ def add_provider(name: str, api_key: str | None, api_url: str | None) -> None:
     try:
         Provider.create(name=name, api_key=api_key, api_url=api_url)
         typer.secho(f"Successfully added provider: {name}", fg=typer.colors.GREEN)
-    except IntegrityError as e:
+    except IntegrityError:
         typer.secho(f"Provider {name} already exists", fg=typer.colors.YELLOW)
         raise typer.Exit(1)
 
@@ -26,7 +26,7 @@ def delete_provider(name: str) -> None:
         provider = Provider.get(name)
         provider.delete()
         typer.secho(f"Successfully deleted provider: {name}", fg=typer.colors.GREEN)
-    except NoResultFound as e:
+    except NoResultFound:
         typer.secho(
             f"Provider {name} not found in database. "
             "Please add it using 'synda provider add <name> --api-key <key>'",
@@ -50,7 +50,7 @@ def update_provider(name: str, api_key: str, api_url: str) -> None:
         if api_url is not None:
             provider.update(api_url=api_url)
         typer.secho(f"Successfully updated provider: {name}", fg=typer.colors.GREEN)
-    except NoResultFound as e:
+    except NoResultFound:
         typer.secho(f"Provider {name} not found", fg=typer.colors.RED)
         raise typer.Exit(1)
 
@@ -62,20 +62,15 @@ def provider_command(
     model_provider: str = typer.Argument(..., help="Model provider name"),
     api_key: str = typer.Option(
         None,
-        "--api-key",
         "-k",
         help="API key for model provider",
     ),
-    api_url: str = typer.Option(
-        None, "--api-url", "-k", help="API url to call for model provider"
-    ),
-):
-    action_handlers = {
-        ProviderAction.ADD: lambda: add_provider(model_provider, api_key, api_url),
-        ProviderAction.DELETE: lambda: delete_provider(model_provider),
-        ProviderAction.UPDATE: lambda: update_provider(
-            model_provider, api_key, api_url
-        ),
-    }
-
-    action_handlers[action]()
+    api_url: str = typer.Option(None, "-k", help="API url to call for model provider"),
+) -> None:
+    match action:
+        case ProviderAction.ADD:
+            add_provider(model_provider, api_key, api_url)
+        case ProviderAction.DELETE:
+            delete_provider(model_provider)
+        case ProviderAction.UPDATE:
+            update_provider(model_provider, api_key, api_url)
