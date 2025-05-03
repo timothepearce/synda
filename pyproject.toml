@@ -22,7 +22,7 @@ sqlmodel = "^0.0.22"
 typer = {extras = ["all"], version = "^0.15.1"}
 scikit-learn = "^1.6.1"
 openpyxl = "^3.1.5"
-vllm = "^0.8.4"
+vllm = {version = "0.8.4", extras = ["all"]}
 pypdf2 = "^3.0.1"
 
 [tool.poetry.group.dev.dependencies]

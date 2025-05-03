@@ -22,10 +22,11 @@ pipeline:
   - type: generation
     method: llm
     parameters:
-      provider: vllm
+      provider: hosted_vllm
       model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
       occurrences: 1
       batch_size: 2
+      batch: true
       template: |
         Ask a question regarding the sentence about the content.
         content: {chunk_faq}
@@ -50,6 +51,8 @@ pipeline:
       provider: ollama
       model: llama3.2
       consensus: all
+      batch_size: 4
+      batch: true
       criteria:
         - Is the question written in english?
         - Is the question consistent?
