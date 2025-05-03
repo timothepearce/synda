@@ -1,5 +1,4 @@
 import asyncio
-import requests
 from sqlmodel import Session
 
 from synda.model.provider import Provider
@@ -125,17 +124,6 @@ class LLM(Executor):
             prompts=prompts,
             temperature=self.config.parameters.temperature,
         )
-
-    def _hosted_vllm_batch_inference(self, prompts):
-        llm_answers = requests.post(
-            self.provider.api_url,
-            json={
-                "model": self.model,
-                "prompt": prompts,
-                "temperature": self.config.parameters.temperature,
-            }
-        ).json()
-        return [answer["text"] for answer in llm_answers["choices"]]
         
     def _build_prompts(self, node: Node, template: str, instruction_sets: list, instruction_mode: str) -> list[str]:
         return PromptBuilder.build(
