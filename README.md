@@ -136,14 +136,14 @@ The following features are planned for future releases.
 - [x] Allow injecting params from distant step into prompt
 - [x] Add Ollama with structured generation output
 - [x] Retry a failed run
+- [x] Batch processing logic (via param.) for LLMs steps
+- [x] Allow pausing and resuming pipelines
+- [x] Enable caching of each step's output
 - [ ] Add asynchronous behaviour for any CLI
 - [ ] Add vLLM with structured generation output
-- [ ] Batch processing logic (via param.) for LLMs steps
 - [ ] Move input into pipeline (step type: 'load')
 - [ ] Move output into pipeline (step type: 'export')
-- [ ] Allow pausing and resuming pipelines
 - [ ] Trace each synthetic data with his historic
-- [ ] Enable caching of each step's output
 - [ ] Implement custom scriptable step for developer
 - [ ] Use Ray for large workload
 - [ ] Add a programmatic API
@@ -152,7 +152,7 @@ The following features are planned for future releases.
 - [x] input/output: .xls format
 - [ ] input/output: Hugging Face datasets
 - [ ] chunk: Semantic chunks
-- [ ] clean: embedding deduplication
+- [x] clean: embedding deduplication
 - [ ] ablation: LLMs as a juries
 - [ ] masking: NER (GliNER)
 - [ ] masking: Regexp
