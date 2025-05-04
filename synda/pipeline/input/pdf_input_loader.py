@@ -20,6 +20,9 @@ class PDFInputLoader(InputLoader):
             total_pages = len(reader.pages)
             page_indices = self.properties.get_page_indices(total_pages)
             
+            if self.properties.limit is not None:
+                page_indices = page_indices[:self.properties.limit]
+            
             for page_num in page_indices:
                 page = reader.pages[page_num]
                 text = page.extract_text()

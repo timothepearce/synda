@@ -6,13 +6,14 @@ from synda.config.input.csv import CSVInputProperties
 from synda.config.input.xls import XLSInputProperties
 from synda.config.input.pdf import PDFInputProperties
 from synda.config.input.database import DatabaseInputProperties
+from synda.config.input.huggingface import HuggingFaceInputProperties
 
 from synda.pipeline.input import InputLoader
 
 
 class Input(BaseModel):
-    type: Literal["csv", "xls", "pdf"]
-    properties: CSVInputProperties | XLSInputProperties | PDFInputProperties  # | DatabaseSourceProperties
+    type: Literal["csv", "xls", "pdf", "huggingface"]
+    properties: CSVInputProperties | XLSInputProperties | PDFInputProperties | HuggingFaceInputProperties  # | DatabaseSourceProperties
 
     def get_loader(self) -> InputLoader:
         if self.type == "csv":
@@ -27,3 +28,7 @@ class Input(BaseModel):
             from synda.pipeline.input.pdf_input_loader import PDFInputLoader
             
             return PDFInputLoader(self)
+        elif self.type == "huggingface":
+            from synda.pipeline.input.huggingface_input_loader import HuggingFaceDatasetLoader
+            
+            return HuggingFaceDatasetLoader(self)
