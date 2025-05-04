@@ -1,6 +1,13 @@
+import os
+from pathlib import Path
+
 from sqlmodel import SQLModel, create_engine, Session
 
-DATABASE_URL = "sqlite:///.synda.db"
+home_dir = Path.home()
+synda_dir = home_dir / ".synda"
+synda_dir.mkdir(exist_ok=True)
+
+DATABASE_URL = f"sqlite:///{synda_dir}/synda.db"
 
 engine = create_engine(DATABASE_URL)
 
