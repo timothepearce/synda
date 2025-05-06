@@ -1,6 +1,7 @@
 from pathlib import Path
-import typer
 from typing import Optional
+
+import typer
 
 from synda.config import Config
 from synda.pipeline import Pipeline
@@ -28,6 +29,6 @@ def generate_command(
     elif run_id is not None:
         Pipeline().resume(run_id=run_id)
     else:
-        config = Config.load_config(config_file)
+        config = Config.from_yaml(config_file)
         pipeline = Pipeline(config)
         pipeline.execute()
