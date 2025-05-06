@@ -5,8 +5,8 @@ from rich.console import Console
 from rich.markup import escape
 from sqlmodel import Session
 
-from synda.model.node import Node, NodeStatus
 from synda.database import engine
+from synda.model.node import Node, NodeStatus
 from synda.model.run import Run, RunStatus
 from synda.model.step import Step
 from synda.utils.env import is_debug_enabled
@@ -21,8 +21,6 @@ class Pipeline:
     def __init__(self, config: Optional["Config"] = None):
         self.session = Session(engine)
         self.config = config
-        self.input_loader = config.input.get_loader() if config else None
-        self.output_saver = config.output.get_saver() if config else None
         self.pipeline = config.pipeline if config else None
         self.run = Run.create_with_steps(self.session, config) if config else None
 
@@ -76,7 +74,7 @@ class Pipeline:
         if self.config is None:
             raise ValueError("Config can't be None to execute a pipeline")
 
-        input_nodes = self.input_loader.load(self.session)
+        input_nodes = self.config.input.load_nodes(self.session)
 
         for step in self.run.steps:
             self._log_debug_info(step)
@@ -110,7 +108,6 @@ class Pipeline:
             session=self.session, step=step
         )
         self.config = Config.model_validate(self.run.config)
-        self.output_saver = self.config.output.get_saver()
 
         self._execute_remaining_steps(input_nodes, remaining_steps)
 
@@ -156,7 +153,9 @@ class Pipeline:
         if is_debug_enabled():
             print(step)
 
-    def _finalize_run(self, input_nodes: list[Node]):
-        self.output_saver.save(input_nodes)
+    def _finalize_run(self, input_nodes: list[Node]) -> None:
+        if self.config is None or self.run is None:
+            raise ValueError("Config and run can't be None to finalize a pipeline")
+        self.config.output.save_output(nodes=input_nodes)
         self.run.update(self.session, RunStatus.FINISHED)
         CONSOLE.print(f"[green]Run {self.run.id} finished successfully!")
