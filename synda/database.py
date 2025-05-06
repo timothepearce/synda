@@ -1,7 +1,6 @@
-import os
 from pathlib import Path
 
-from sqlmodel import SQLModel, create_engine, Session
+from sqlmodel import Session, SQLModel, create_engine
 
 home_dir = Path.home()
 synda_dir = home_dir / ".synda"

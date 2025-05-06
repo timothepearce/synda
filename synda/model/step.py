@@ -2,11 +2,12 @@ from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from sqlmodel import Column, SQLModel, Field, Relationship, JSON, Session, select
+from sqlmodel import Column, Field, Relationship, JSON, Session, select
 from sqlalchemy import and_
 
 from synda.model.step_node import StepNode, StepNodeRelationshipType
 from synda.model.node import Node
+from synda.model.utils import SQLModel
 
 if TYPE_CHECKING:
     from synda.config.step import Step as StepConfig
