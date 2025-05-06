@@ -1,4 +1,5 @@
-from sqlmodel import SQLModel, Session, Field, select
+from sqlmodel import Session, Field, select
+from synda.model.utils import SQLModel
 
 from synda.database import engine
 

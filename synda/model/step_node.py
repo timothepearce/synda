@@ -1,7 +1,8 @@
 from enum import Enum
-from typing import Literal, TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import Field, Relationship
+from synda.model.utils import SQLModel
 
 if TYPE_CHECKING:
     from synda.config.step import Step
@@ -14,8 +15,7 @@ class StepNodeRelationshipType(Enum):
 
 
 class StepNode(SQLModel, table=True):
-    __tablename__ = "step_node"
-
+    __tablename__: ClassVar[str] = "step_node"  # pyright: ignore[reportIncompatibleVariableOverride]
     step_id: int = Field(foreign_key="step.id", primary_key=True)
     node_id: int = Field(foreign_key="node.id", primary_key=True)
     relationship_type: StepNodeRelationshipType = Field(index=True)
