@@ -10,6 +10,8 @@ app = typer.Typer(
     name="synda",
     help="A synthetic data generator pipeline CLI.",
     add_completion=False,
+    no_args_is_help=True,
+    pretty_exceptions_enable=False,
 )
 
 app.command("provider")(provider_command)
