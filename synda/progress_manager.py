@@ -35,10 +35,15 @@ class ProgressManager:
 
     @contextmanager
     def task(
-        self, description: str, total: int, completed: int = 0, transient: bool = False
+        self, description: str, total: int, completed: int = 0, batch_size: int = 1, transient: bool = False
     ):
         with self.progress as progress:
             task_id = progress.add_task(
                 description, total=total, transient=transient, completed=completed
             )
-            yield lambda: progress.advance(task_id)
+            def safe_advance():
+                remaining = total - progress.tasks[task_id].completed
+                progress.advance(task_id, min(batch_size, int(remaining)))
+
+            yield safe_advance
+            # yield lambda: progress.advance(task_id, batch_size)

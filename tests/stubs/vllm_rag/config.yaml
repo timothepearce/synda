@@ -1,0 +1,64 @@
+input:
+  type: csv
+  properties:
+    path: tests/stubs/vllm_rag/source.csv
+    target_column: content
+    separator: "\t"
+
+pipeline:
+  - type: split
+    method: chunk
+    name: chunk_faq
+    parameters:
+      size: 1500
+
+  - type: split
+    method: separator
+    name: sentence_chunk_faq
+    parameters:
+      separator: .
+      keep_separator: true
+
+  - type: generation
+    method: llm
+    parameters:
+      provider: hosted_vllm
+      model: TinyLlama/TinyLlama-1.1B-Chat-v1.0
+      occurrences: 1
+      batch_size: 2
+      batch: true
+      template: |
+        Ask a question regarding the sentence about the content.
+        content: {chunk_faq}
+        sentence: {sentence_chunk_faq}
+
+        Instructions :
+        1. Use english only
+        2. Keep it short
+
+        question:
+
+  - type: clean
+    method: deduplicate-tf-idf
+    parameters:
+      strategy: fuzzy
+      similarity_threshold: 0.6
+      keep: first
+
+  - type: ablation
+    method: llm-judge-binary
+    parameters:
+      provider: ollama
+      model: llama3.2
+      consensus: all
+      batch_size: 4
+      batch: true
+      criteria:
+        - Is the question written in english?
+        - Is the question consistent?
+
+output:
+  type: csv
+  properties:
+    path: tests/stubs/vllm_rag/output.csv
+    separator: "\t"
