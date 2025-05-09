@@ -15,6 +15,10 @@ class CSVInputLoader(InputLoader):
     def load(self, session: Session) -> list[Node]:
         df = pd.read_csv(self.properties.path, sep=self.properties.separator)
         target_list = df[self.properties.target_column]
+        
+        if self.properties.limit is not None:
+            target_list = target_list[:self.properties.limit]
+            
         result = []
 
         for value in target_list.values:
