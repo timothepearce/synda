@@ -1,18 +1,16 @@
-import sys
-import yaml
 from pathlib import Path
 
-import typer
-from pydantic import BaseModel, model_validator
+import yaml
+from pydantic import BaseModel, ValidationError, model_validator
 from sqlmodel import Session, select
 
-from synda.config.input import Input
-from synda.config.output import Output
 from synda.config.ablation import Ablation
-from synda.config.generation import Generation
-from synda.config.split import Split
 from synda.config.clean import Clean
+from synda.config.generation import Generation
+from synda.config.input import InputConfig
 from synda.config.metadata import Metadata
+from synda.config.output import OutputConfig
+from synda.config.split import Split
 from synda.database import engine
 from synda.model.provider import Provider
 
@@ -22,31 +20,17 @@ class MissingProviderError(Exception):
 
 
 class Config(BaseModel):
-    input: Input
+    input: InputConfig
     pipeline: list[Split | Generation | Ablation | Clean | Metadata]
-    output: Output
+    output: OutputConfig
 
-    @staticmethod
-    def load_config(config_path: Path) -> "Config":
+    @classmethod
+    def from_yaml(cls, path: Path) -> "Config":
         try:
-            with open(config_path, "r", encoding="utf-8") as file:
-                return Config.model_validate(yaml.safe_load(file))
-        except yaml.YAMLError as e:
-            print(f"Error in YAML file: {e}")
-            sys.exit(1)
-        except FileNotFoundError:
-            print(f"The file {config_path} doesn't exist")
-            sys.exit(1)
-        except ValueError as e:
-            print(f"Configuration validation error: {e}")
-            sys.exit(1)
-        except MissingProviderError as e:
-            typer.secho(
-                f"The following providers are not configured: {str(e)}.\n"
-                "Please add them using 'synda provider add <name> --api-key <key>'",
-                fg=typer.colors.RED,
-            )
-            raise typer.Exit(1)
+            data = yaml.safe_load(path.read_text(encoding="utf-8"))
+            return cls.model_validate(data)
+        except (yaml.YAMLError, ValidationError) as e:
+            raise ValueError(f"Error loading configuration: {e}")
 
     @model_validator(mode="after")
     def validate_providers(self) -> "Config":

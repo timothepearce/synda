@@ -1,6 +1,7 @@
 from pathlib import Path
-import typer
 from typing import Optional
+
+import typer
 
 from synda.config import Config
 from synda.pipeline import Pipeline
@@ -16,18 +17,18 @@ def generate_command(
         resolve_path=True,
     ),
     retry: bool = typer.Option(
-        False, "--retry", "-r", help="Run the pipeline from last failed step"
+        False, "-r", help="Run the pipeline from last failed step"
     ),
     run_id: Optional[int] = typer.Option(
-        None, "--resume", "-re", help="Resume the pipeline from a given run id"
+        None, "-re", help="Resume the pipeline from a given run id"
     ),
-):
+) -> None:
     """Run a pipeline with provided configuration."""
     if retry:
         Pipeline().retry()
     elif run_id is not None:
         Pipeline().resume(run_id=run_id)
     else:
-        config = Config.load_config(config_file)
+        config = Config.from_yaml(config_file)
         pipeline = Pipeline(config)
         pipeline.execute()

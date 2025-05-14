@@ -1,12 +1,13 @@
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from sqlmodel import JSON, Column, Field, Relationship, Session, select
 
 from synda.model.node import Node
 from synda.model.step import Step, StepStatus
 from synda.model.utils import SQLModel
+
 
 if TYPE_CHECKING:
     from synda.config import Config
@@ -18,11 +19,13 @@ class RunStatus(str, Enum):
     STOPPED = "stopped"
     ERRORED = "errored"
 
+DumpedConfig = dict[str, Any]
+
 
 class Run(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     status: RunStatus = Field(default=RunStatus.RUNNING, index=True)
-    config: "Config" = Field(default=None, sa_column=Column(JSON))
+    config: DumpedConfig = Field(default=None, sa_column=Column(JSON))
     created_at: datetime = Field(default_factory=datetime.now)
 
     steps: list[Step] = Relationship(back_populates="run")
@@ -33,7 +36,7 @@ class Run(SQLModel, table=True):
 
     @staticmethod
     def create_with_steps(session: Session, config: "Config") -> "Run":
-        run = Run(config=config.model_dump())
+        run = Run(config=config.model_dump(mode="json"))
 
         session.add(run)
         session.flush()
