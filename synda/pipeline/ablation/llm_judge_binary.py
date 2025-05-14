@@ -1,6 +1,6 @@
 import json
 import asyncio
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel
 from sqlmodel import Session
@@ -63,11 +63,11 @@ class LLMJudgeBinary(Executor):
 
     def _execute_batch(self, pending_nodes: list[Node], processed_nodes: list[Node], criteria: list[str]) -> list[Node]:
         result = processed_nodes or []
-        num_batches = (len(pending_nodes) + self.batch_size - 1) // self.batch_size
         with self.progress.task(
             "  Ablating...",
-            num_batches,
-            completed=0,
+            len(pending_nodes) + len(processed_nodes),
+            completed=len(processed_nodes),
+            batch_size=self.batch_size
         ) as advance_node:
             loop = asyncio.get_event_loop()
             for i in range(0, len(pending_nodes), self.batch_size):
@@ -136,7 +136,7 @@ class LLMJudgeBinary(Executor):
         result_node = Node(
             parent_node_id=node.id, value=node.value, ablated=ablated
         )
-        self.step_model.save_during_execution(self.session, node, result_node)
+        self.step_model.save_during_execution(self.session, [node], [result_node])
         return result_node
 
     def _parse_judge_answer(self, judge_answer_str: str) -> LLMJudgeCriterionBinaryAnswer:

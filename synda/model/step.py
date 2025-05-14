@@ -111,10 +111,10 @@ class Step(SQLModel, table=True):
         return self
 
     def save_during_execution(
-        self, session: Session, input_node: Node, output_node: Node
+        self, session: Session, input_nodes: list[Node], output_nodes: list[Node]
     ) -> "Step":
-        self._create_nodes_with_ancestors(session, [input_node], [output_node])
-        self._map_output_nodes_to_step(session, [output_node])
+        self._create_nodes_with_ancestors(session, input_nodes, output_nodes)
+        self._map_output_nodes_to_step(session, output_nodes)
 
         return self
 
